@@ -1,0 +1,190 @@
+================ نتائج الاختبار ================
+  #  |              القسم              | النتيجة |                      الاختبار                      |                                                     التفاصيل                                                      
+-----+---------------------------------+---------+----------------------------------------------------+-------------------------------------------------------------------------------------------------------------------
+   1 | 1. إعداد الأدمن الأساسي         | PASS    | عضو مسجّل لا يستطيع تنفيذ bootstrap_owner           | error: permission denied for function bootstrap_owner
+   2 | 1. إعداد الأدمن الأساسي         | PASS    | الزائر (anon) لا يستطيع تنفيذ bootstrap_owner      | error: permission denied for function bootstrap_owner
+   3 | 1. إعداد الأدمن الأساسي         | PASS    | SQL Editor يعيّن الأدمن الأساسي                     | rows=1
+   4 | 1. إعداد الأدمن الأساسي         | PASS    | لا يمكن تعيين أدمن أساسي ثانٍ                       | error: owner_exists: يوجد أدمن أساسي مسبقًا
+   5 | 2. الدعوات                      | PASS    | الأدمن يرى الدعوات                                 | expected 5, got 5
+   6 | 2. الدعوات                      | PASS    | الأدمن يلغي دعوة                                   | rows=1
+   7 | 2. الدعوات                      | PASS    | مستخدم بلا عضوية لا يرى الدعوات                    | expected 0, got 0
+   8 | 2. الدعوات                      | PASS    | مستخدم بلا عضوية لا ينشئ دعوة                      | error: admin_only
+   9 | 2. الدعوات                      | PASS    | لا يمكن تعديل جدول الدعوات مباشرة                  | error: permission denied for table invites
+  10 | 2. الدعوات                      | PASS    | check_invite متاح قبل التسجيل                      | rows=1
+  11 | 2. الدعوات                      | PASS    | check_invite: كود غير صحيح = false                 | expected 1, got 1
+  12 | 2. الدعوات                      | PASS    | anon لا يستطيع redeem_invite                       | error: permission denied for function redeem_invite
+  13 | 2. الدعوات                      | PASS    | anon ممنوع من جدول الملفات الشخصية                 | error: permission denied for table profiles
+  14 | 2. الدعوات                      | PASS    | anon ممنوع من جدول الطلعات                         | error: permission denied for table rides
+  15 | 2. الدعوات                      | PASS    | كود خاطئ يُرفض                                      | error: invalid_invite
+  16 | 2. الدعوات                      | PASS    | كود ملغى يُرفض                                      | error: invalid_invite
+  17 | 2. الدعوات                      | PASS    | m1 يستخدم دعوته → بانتظار الموافقة                 | rows=1
+  18 | 2. الدعوات                      | PASS    | حالة m1 pending                                    | expected 1, got 1
+  19 | 2. الدعوات                      | PASS    | دعوة استخدام واحد لا تُستخدم مرتين                  | error: invalid_invite
+  20 | 2. الدعوات                      | PASS    | دعوة منتهية الصلاحية تُرفض                          | error: invalid_invite
+  21 | 3. حساب غير مقبول (pending)     | PASS    | يرى ملفه فقط                                       | expected 1, got 1
+  22 | 3. حساب غير مقبول (pending)     | PASS    | لا يغيّر حالته إلى active                           | error: permission denied for table profiles
+  23 | 3. حساب غير مقبول (pending)     | PASS    | لا يرقّي نفسه إلى admin                             | error: permission denied for table profiles
+  24 | 3. حساب غير مقبول (pending)     | PASS    | لا ينشئ ملفًا شخصيًا مباشرة                          | error: permission denied for table profiles
+  25 | 3. حساب غير مقبول (pending)     | PASS    | يعدّل اسمه ومدينته                                  | rows=1
+  26 | 3. حساب غير مقبول (pending)     | PASS    | لا يوافق على نفسه                                  | error: admin_only
+  27 | 3. حساب غير مقبول (pending)     | PASS    | الأدمن يرى طلبات الانضمام المعلّقة                  | expected 4, got 4
+  28 | 3. حساب غير مقبول (pending)     | PASS    | الأدمن يقبل m1                                     | rows=1
+  29 | 3. حساب غير مقبول (pending)     | PASS    | الأدمن يقبل m2                                     | rows=1
+  30 | 3. حساب غير مقبول (pending)     | PASS    | الأدمن يقبل admin2                                 | rows=1
+  31 | 4. الأدوار ومنع الترقية الذاتية | PASS    | العضو لا يرقّي نفسه                                 | error: permission denied for table profiles
+  32 | 4. الأدوار ومنع الترقية الذاتية | PASS    | العضو لا يستدعي set_admin                          | error: owner_only
+  33 | 4. الأدوار ومنع الترقية الذاتية | PASS    | العضو لا يوافق على عضو معلّق                        | error: admin_only
+  34 | 4. الأدوار ومنع الترقية الذاتية | PASS    | العضو لا يعدّل ملف غيره (0 صفوف)                    | rows=0
+  35 | 4. الأدوار ومنع الترقية الذاتية | PASS    | العضو لا يرى الأعضاء المعلّقين                      | expected 0, got 0
+  36 | 4. الأدوار ومنع الترقية الذاتية | PASS    | العضو يرى الأعضاء المقبولين (4)                    | expected 4, got 4
+  37 | 4. الأدوار ومنع الترقية الذاتية | PASS    | جاهز أطلع لا يتجاوز 12 ساعة                        | error: ready_too_long
+  38 | 4. الأدوار ومنع الترقية الذاتية | PASS    | تفعيل جاهز أطلع لساعتين                            | rows=1
+  39 | 4. الأدوار ومنع الترقية الذاتية | PASS    | الأساسي يعيّن admin2 أدمن                           | rows=1
+  40 | 4. الأدوار ومنع الترقية الذاتية | PASS    | الأدمن الإضافي لا يعيّن أدمن آخر                    | error: owner_only
+  41 | 4. الأدوار ومنع الترقية الذاتية | PASS    | الأدمن الإضافي لا يوقف الأساسي                     | error: cannot_suspend_owner
+  42 | 4. الأدوار ومنع الترقية الذاتية | PASS    | الأدمن الإضافي يرى الدعوات                         | rows=5
+  43 | 4. الأدوار ومنع الترقية الذاتية | PASS    | لا يمكن تحويل الأساسي لعضو عبر set_admin           | error: owner_only
+  44 | 5. رقم التواصل                  | PASS    | m1 يحفظ رقمه مخفيًا                                 | rows=1
+  45 | 5. رقم التواصل                  | PASS    | m1 لا يحفظ رقمًا باسم غيره                          | error: new row violates row-level security policy for table "member_contacts"
+  46 | 5. رقم التواصل                  | PASS    | m2 لا يرى رقم m1 المخفي                            | expected 0, got 0
+  47 | 5. رقم التواصل                  | PASS    | حتى الأدمن لا يرى الرقم المخفي                     | expected 0, got 0
+  48 | 5. رقم التواصل                  | PASS    | m1 يُظهر رقمه                                       | rows=1
+  49 | 5. رقم التواصل                  | PASS    | m2 يرى الرقم بعد الإظهار                           | expected 1, got 1
+  50 | 5. رقم التواصل                  | PASS    | غير المقبول لا يرى الرقم                           | expected 0, got 0
+  51 | 5. رقم التواصل                  | PASS    | حفظ الرقم بطريقة upsert (كما يرسلها التطبيق)       | rows=1
+  52 | 5. رقم التواصل                  | PASS    | upsert لا يسمح بالكتابة فوق رقم عضو آخر            | error: new row violates row-level security policy for table "member_contacts"
+  53 | 6. الطلعات والمشاركة            | PASS    | عضو يقترح طلعة                                     | rows=1
+  54 | 6. الطلعات والمشاركة            | PASS    | المنظّم أُضيف تلقائيًا كمشارك                         | expected 1, got 1
+  55 | 6. الطلعات والمشاركة            | PASS    | المنظّم = المنشئ                                    | expected 1, got 1
+  56 | 6. الطلعات والمشاركة            | PASS    | العضو لا يعيّن غيره منظّمًا                           | error: organizer_not_allowed
+  57 | 6. الطلعات والمشاركة            | PASS    | وقت التحرك لا يسبق التجمع                          | error: new row for relation "rides" violates check constraint "rides_check2"
+  58 | 6. الطلعات والمشاركة            | PASS    | لا يمكن تزوير created_by                           | error: permission denied for table rides
+  59 | 6. الطلعات والمشاركة            | PASS    | قائد الطلعة يجب أن يكون مشاركًا                     | error: leader_must_be_participant
+  60 | 6. الطلعات والمشاركة            | PASS    | m2 لا يعدّل طلعة m1 (0 صفوف)                        | rows=0
+  61 | 6. الطلعات والمشاركة            | PASS    | m2 لا يحذف طلعة m1 (0 صفوف)                        | rows=0
+  62 | 6. الطلعات والمشاركة            | PASS    | m2 يؤكد المشاركة                                   | rows=1
+  63 | 6. الطلعات والمشاركة            | PASS    | m2 لا يضيف مشاركًا باسم غيره                        | error: permission denied for table ride_participants
+  64 | 6. الطلعات والمشاركة            | PASS    | m2 لا يعدّل حالة غيره مباشرة                        | error: permission denied for table ride_participants
+  65 | 6. الطلعات والمشاركة            | PASS    | m2: في الطريق                                      | rows=1
+  66 | 6. الطلعات والمشاركة            | PASS    | m2: وصلت التجمع                                    | rows=1
+  67 | 6. الطلعات والمشاركة            | PASS    | وقت التحديث يُسجَّل من الخادم                         | expected 1, got 1
+  68 | 6. الطلعات والمشاركة            | PASS    | المنظّم يعيّن m2 قائدًا                               | rows=1
+  69 | 6. الطلعات والمشاركة            | PASS    | آخر الركب ≠ قائد الطلعة                            | error: new row for relation "rides" violates check constraint "rides_check4"
+  70 | 6. الطلعات والمشاركة            | PASS    | المنظّم يضيف محطة بنزين                             | rows=1
+  71 | 6. الطلعات والمشاركة            | PASS    | غير المنظّم لا يضيف محطة                            | error: new row violates row-level security policy for table "ride_stops"
+  72 | 6. الطلعات والمشاركة            | PASS    | m2 يعتذر                                           | rows=1
+  73 | 6. الطلعات والمشاركة            | PASS    | اعتذار القائد يلغي تعيينه ويمسح حالته              | expected 1, got 1
+  74 | 6. الطلعات والمشاركة            | PASS    | المعتذر لا يحدّث حالة الطريق                        | error: not_going
+  75 | 6. الطلعات والمشاركة            | PASS    | m2 يعود مشاركًا                                     | rows=1
+  76 | 6. الطلعات والمشاركة            | PASS    | غير المقبول: صفر طلعات                             | expected 0, got 0
+  77 | 6. الطلعات والمشاركة            | PASS    | غير المقبول لا ينشئ طلعة                           | error: organizer_not_active
+  78 | 6. الطلعات والمشاركة            | PASS    | غير المقبول لا يؤكد مشاركة                         | error: members_only
+  79 | 6. الطلعات والمشاركة            | PASS    | الأدمن يعدّل أي طلعة                                | rows=1
+  80 | 7. التصويت                      | PASS    | المنظّم ينشئ تصويت وجهة                             | rows=1
+  81 | 7. التصويت                      | PASS    | تصويت بخيار واحد يُرفض                              | error: poll_needs_2_to_8_options
+  82 | 7. التصويت                      | PASS    | غير المنظّم لا ينشئ تصويتًا لطلعة غيره               | error: ride_managers_only
+  83 | 7. التصويت                      | PASS    | m2 يصوّت                                            | rows=1
+  84 | 7. التصويت                      | PASS    | m2 يغيّر صوته                                       | rows=1
+  85 | 7. التصويت                      | PASS    | صوت واحد فقط لـ m2                                 | expected 1, got 1
+  86 | 7. التصويت                      | PASS    | لا يمكن الإدراج المباشر في الأصوات (تجاوز القاعدة) | error: permission denied for table poll_votes
+  87 | 7. التصويت                      | PASS    | m1 يصوّت                                            | rows=1
+  88 | 7. التصويت                      | PASS    | تصويت عام من عضو                                   | rows=1
+  89 | 7. التصويت                      | PASS    | لا يُقبل خيار من تصويت آخر                          | error: insert or update on table "poll_votes" violates foreign key constraint "poll_votes_option_id_poll_id_fkey"
+  90 | 7. التصويت                      | PASS    | نتيجة التصويت: خياران = 2 صوت على الخيار الثاني    | expected 2, got 2
+  91 | 7. التصويت                      | PASS    | غير المنشئ لا يغلق التصويت                         | error: not_allowed
+  92 | 7. التصويت                      | PASS    | المنشئ يغلق التصويت                                | rows=1
+  93 | 7. التصويت                      | PASS    | لا تصويت بعد الإغلاق                               | error: poll_closed
+  94 | 7. التصويت                      | PASS    | غير المقبول لا يصوّت                                | error: members_only
+  95 | 7. التصويت                      | PASS    | غير المقبول لا يرى التصويتات                       | expected 0, got 0
+  96 | 8. الشات                        | PASS    | m1 يرسل في الشات العام                             | rows=1
+  97 | 8. الشات                        | PASS    | الضغط مرتين (نفس client_id) لا يكرر الرسالة        | error: duplicate key value violates unique constraint "messages_user_id_client_id_key"
+  98 | 8. الشات                        | PASS    | رسالة واحدة فقط محفوظة                             | expected 1, got 1
+  99 | 8. الشات                        | PASS    | m1 يرسل في شات الطلعة                              | rows=1
+ 100 | 8. الشات                        | PASS    | لا يمكن إرسال رسالة باسم عضو آخر                   | error: permission denied for table messages
+ 101 | 8. الشات                        | PASS    | لا يمكن تزوير وقت الرسالة                          | error: permission denied for table messages
+ 102 | 8. الشات                        | PASS    | صورة الرسالة يجب أن تكون من مجلد المرسل            | error: new row for relation "messages" violates check constraint "messages_check1"
+ 103 | 8. الشات                        | PASS    | رسالة فارغة تُرفض                                   | error: new row for relation "messages" violates check constraint "messages_check"
+ 104 | 8. الشات                        | PASS    | m2 يرى رسائل القروب                                | expected 2, got 2
+ 105 | 8. الشات                        | PASS    | m2 لا يحذف رسالة m1 (0 صفوف)                       | rows=0
+ 106 | 8. الشات                        | PASS    | لا تعديل للرسائل                                   | error: permission denied for table messages
+ 107 | 8. الشات                        | PASS    | m1 يحذف رسالته                                     | rows=1
+ 108 | 8. الشات                        | PASS    | m2 يرسل رسالة                                      | rows=1
+ 109 | 8. الشات                        | PASS    | الأدمن يحذف المحتوى المخالف                        | rows=1
+ 110 | 8. الشات                        | PASS    | غير المقبول لا يرى الرسائل                         | expected 0, got 0
+ 111 | 8. الشات                        | PASS    | غير المقبول لا يرسل                                | error: new row violates row-level security policy for table "messages"
+ 112 | 8. الشات                        | PASS    | مستخدم بلا عضوية لا يرى الرسائل                    | expected 0, got 0
+ 113 | 9. مشاركة الموقع                | PASS    | لا يمكن الإدراج المباشر في جدول المواقع            | error: permission denied for table member_locations
+ 114 | 9. مشاركة الموقع                | PASS    | مدة المشاركة لا تتجاوز 12 ساعة                     | error: share_too_long
+ 115 | 9. مشاركة الموقع                | PASS    | لا مشاركة بتاريخ منتهٍ                              | error: share_until_past
+ 116 | 9. مشاركة الموقع                | PASS    | m1 يشارك موقعه لساعة                               | rows=1
+ 117 | 9. مشاركة الموقع                | PASS    | تحديث الموقع يستبدل السابق (لا سجل)                | rows=1
+ 118 | 9. مشاركة الموقع                | PASS    | صف واحد فقط لـ m1                                  | expected 1, got 1
+ 119 | 9. مشاركة الموقع                | PASS    | m2 يرى موقع m1                                     | expected 1, got 1
+ 120 | 9. مشاركة الموقع                | PASS    | m2 يشارك أثناء الطلعة                              | rows=1
+ 121 | 9. مشاركة الموقع                | PASS    | m2 لا يحذف موقع m1 (0 صفوف)                        | rows=0
+ 122 | 9. مشاركة الموقع                | PASS    | غير المقبول لا يرى المواقع                         | expected 0, got 0
+ 123 | 9. مشاركة الموقع                | PASS    | غير المقبول لا يشارك موقعه                         | error: members_only
+ 124 | 9. مشاركة الموقع                | PASS    | m1 يوقف المشاركة                                   | rows=1
+ 125 | 9. مشاركة الموقع                | PASS    | بعد الإيقاف لا يظهر موقع m1                        | expected 0, got 0
+ 126 | 9. مشاركة الموقع                | PASS    | m1 يشارك لمدة ثانيتين                              | rows=1
+ 127 | 9. مشاركة الموقع                | PASS    | يظهر أثناء المدة                                   | expected 1, got 1
+ 128 | 9. مشاركة الموقع                | PASS    | بعد انتهاء المدة يختفي فورًا (RLS)                  | expected 0, got 0
+ 129 | 9. مشاركة الموقع                | PASS    | الصف المنتهي ما زال مخزنًا قبل التنظيف              | expected 1, got 1
+ 130 | 9. مشاركة الموقع                | PASS    | أي تحديث موقع يحذف الصفوف المنتهية (لا سجل)        | expected 0, got 0
+ 131 | 9. مشاركة الموقع                | PASS    | المنظّم ينهي الطلعة                                 | rows=1
+ 132 | 9. مشاركة الموقع                | PASS    | انتهاء الطلعة يحذف المواقع المرتبطة بها            | expected 0, got 0
+ 133 | 9. مشاركة الموقع                | PASS    | لا مشاركة موقع لطلعة منتهية                        | error: ride_closed
+ 134 | 9. مشاركة الموقع                | PASS    | m2 يؤكد رجوعه بعد انتهاء الطلعة                    | rows=1
+ 135 | 9. مشاركة الموقع                | PASS    | لا تغيير لتأكيد المشاركة بعد انتهاء الطلعة         | error: ride_closed
+ 136 | 10. طلب المساعدة                | PASS    | m2 يطلب مساعدة (بنشر) مع الموقع                    | rows=1
+ 137 | 10. طلب المساعدة                | PASS    | طلب مفتوح واحد فقط (يمنع التكرار)                  | error: duplicate key value violates unique constraint "help_one_open_per_user"
+ 138 | 10. طلب المساعدة                | PASS    | m1 يرى الطلب                                       | expected 1, got 1
+ 139 | 10. طلب المساعدة                | PASS    | m1: سأتواصل معه                                    | rows=1
+ 140 | 10. طلب المساعدة                | PASS    | لا يمكن تعديل الطلب مباشرة                         | error: permission denied for table help_requests
+ 141 | 10. طلب المساعدة                | PASS    | الأدمن يرى من سيتواصل                              | rows=1
+ 142 | 10. طلب المساعدة                | PASS    | المتواصل يعلّم الطلب محلولًا                         | rows=1
+ 143 | 10. طلب المساعدة                | PASS    | غير المقبول لا يرى طلبات المساعدة                  | expected 0, got 0
+ 144 | 11. الألبوم والتخزين الخاص      | PASS    | m1 يرفع ملفًا في مجلده                              | rows=1
+ 145 | 11. الألبوم والتخزين الخاص      | PASS    | m1 يسجّل الوسائط في الألبوم                         | rows=1
+ 146 | 11. الألبوم والتخزين الخاص      | PASS    | m1 لا يرفع في مجلد m2                              | error: new row violates row-level security policy for table "objects"
+ 147 | 11. الألبوم والتخزين الخاص      | PASS    | نوع ملف غير مسموح يُرفض                             | error: new row for relation "ride_media" violates check constraint "ride_media_check1"
+ 148 | 11. الألبوم والتخزين الخاص      | PASS    | حجم أكبر من 50MB يُرفض                              | error: new row for relation "ride_media" violates check constraint "ride_media_size_bytes_check"
+ 149 | 11. الألبوم والتخزين الخاص      | PASS    | m2 يرى ملفات القروب                                | expected 1, got 1
+ 150 | 11. الألبوم والتخزين الخاص      | PASS    | m2 لا يحذف ملف m1 (0 صفوف)                         | rows=0
+ 151 | 11. الألبوم والتخزين الخاص      | PASS    | m2 لا يحذف وسائط m1 (0 صفوف)                       | rows=0
+ 152 | 11. الألبوم والتخزين الخاص      | PASS    | غير المقبول لا يرى الملفات                         | expected 0, got 0
+ 153 | 11. الألبوم والتخزين الخاص      | PASS    | غير المقبول لا يرفع                                | error: new row violates row-level security policy for table "objects"
+ 154 | 11. الألبوم والتخزين الخاص      | PASS    | الزائر لا يرى الملفات                              | expected 0, got 0
+ 155 | 11. الألبوم والتخزين الخاص      | PASS    | الجداول الأساسية مضافة للتحديث المباشر             | expected 6, got 6
+ 156 | 11. الألبوم والتخزين الخاص      | PASS    | رقم التواصل غير منشور في التحديث المباشر           | expected 0, got 0
+ 157 | 11. الألبوم والتخزين الخاص      | PASS    | الحاوية خاصة (public=false)                        | expected 1, got 1
+ 158 | 12. الإعلانات                   | PASS    | العضو لا ينشر إعلانًا                               | error: new row violates row-level security policy for table "announcements"
+ 159 | 12. الإعلانات                   | PASS    | الأدمن ينشر إعلانًا مثبتًا                           | rows=1
+ 160 | 12. الإعلانات                   | PASS    | العضو يرى الإعلان                                  | expected 1, got 1
+ 161 | 12. الإعلانات                   | PASS    | العضو لا يحذف الإعلان (0 صفوف)                     | rows=0
+ 162 | 13. إيقاف عضو                   | PASS    | العضو لا يوقف عضوًا                                 | error: admin_only
+ 163 | 13. إيقاف عضو                   | PASS    | الأدمن لا يوقف نفسه                                | error: cannot_suspend_self
+ 164 | 13. إيقاف عضو                   | PASS    | الأدمن يوقف m2                                     | rows=1
+ 165 | 13. إيقاف عضو                   | PASS    | الموقوف يرى ملفه فقط (لعرض رسالة الإيقاف)          | expected 1, got 1
+ 166 | 13. إيقاف عضو                   | PASS    | الموقوف لا يرى الرسائل                             | expected 0, got 0
+ 167 | 13. إيقاف عضو                   | PASS    | الموقوف لا يرى الطلعات                             | expected 0, got 0
+ 168 | 13. إيقاف عضو                   | PASS    | الموقوف لا يرى الملفات                             | expected 0, got 0
+ 169 | 13. إيقاف عضو                   | PASS    | الموقوف لا يرى المواقع                             | expected 0, got 0
+ 170 | 13. إيقاف عضو                   | PASS    | الموقوف لا يرسل                                    | error: new row violates row-level security policy for table "messages"
+ 171 | 13. إيقاف عضو                   | PASS    | تعديل الموقوف لملفه لا يمر (0 صفوف)                | rows=0
+ 172 | 13. إيقاف عضو                   | PASS    | الموقوف لا يعيد التسجيل بدعوة                      | error: account_suspended
+ 173 | 13. إيقاف عضو                   | PASS    | إيقاف العضو يحذف موقعه المشارك                     | expected 0, got 0
+ 174 | 13. إيقاف عضو                   | PASS    | الأعضاء لا يرون موقع الموقوف                       | expected 0, got 0
+ 175 | 13. إيقاف عضو                   | PASS    | الأدمن يعيد تفعيل m2                               | rows=1
+ 176 | 13. إيقاف عضو                   | PASS    | الأساسي يوقف الأدمن الإضافي                        | rows=1
+ 177 | 13. إيقاف عضو                   | PASS    | الأدمن الموقوف يفقد دوره                           | expected 1, got 1
+ 178 | 13. إيقاف عضو                   | PASS    | الأدمن الموقوف لا ينشئ دعوات                       | error: admin_only
+ 179 | 13. إيقاف عضو                   | PASS    | الأدمن الموقوف لا يرى الدعوات                      | expected 0, got 0
+ 180 | 13. إيقاف عضو                   | PASS    | الأدمن يحذف طلعة                                   | rows=1
+(180 rows)
+
+ passed | failed | total 
+--------+--------+-------
+    180 |      0 |   180
+(1 row)
+
