@@ -226,6 +226,7 @@ function rpc(name, a = {}) {
     case 'suspend_member': { const p = P(a.p_user); p.status = 'suspended'; p.role = 'member'; db.member_locations = db.member_locations.filter((x) => x.user_id !== p.id); notify('profiles', 'UPDATE', { ...p }); return ok(); }
     case 'set_admin': { const p = P(a.p_user); p.role = a.p_is_admin ? 'admin' : 'member'; notify('profiles', 'UPDATE', { ...p }); return ok(); }
     case 'check_invite': return ok(true);
+    case 'request_join': return ok('pending');
     default: return Promise.resolve(err(`${name} غير متاح في المعاينة`));
   }
 }

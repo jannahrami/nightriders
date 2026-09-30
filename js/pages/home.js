@@ -1,6 +1,6 @@
 // الصفحة الرئيسية: الطلعة القادمة، جاهز أطلع، الإعلانات، طلبات المساعدة، الاختصارات
 import { h, mount, icon, topbar, chip, loadingView, errorView, emptyView, fmtDate, fmtTime, fmtRemaining, fmtRelative, actionBtn, toast, HELP_KIND } from '../ui.js';
-import { state, must, on, myId, member, isReady } from '../core.js';
+import { state, must, on, myId, member, isReady, isAdmin } from '../core.js';
 import { avatar } from '../media.js';
 import { statusChip, rsvpControl, participationFor } from '../components.js';
 
@@ -10,11 +10,13 @@ export default async function home(root) {
   const meReadyBox = h('div');
   const annBox = h('div');
   const helpBox = h('div');
+  const joinBox = h('div');
   const me = state.me;
 
   mount(root, topbar({ actions: h('a', { class: 'icon-btn', href: '#/me', 'aria-label': 'حسابي' }, avatar(me, 'sm')) }),
     h('div', { class: 'content stack-lg' },
       h('div', null, h('div', { class: 'muted small' }, 'أهلًا'), h('div', { class: 'h1' }, me.display_name)),
+      joinBox,
       helpBox,
       nextBox,
       h('div', { class: 'quick' },
@@ -108,13 +110,22 @@ export default async function home(root) {
     } catch { mount(helpBox, null); }
   }
 
-  drawReady(); loadNext(); loadAnn(); loadHelp();
+  // طلبات الانضمام الجديدة (للأدمن فقط)
+  function drawJoin() {
+    if (!isAdmin()) { mount(joinBox, null); return; }
+    const n = [...state.members.values()].filter((m) => m.status === 'pending').length;
+    mount(joinBox, n ? h('a', { class: 'card link stack', href: '#/admin', style: { gap: '4px', borderColor: 'rgba(245,165,36,.5)' } },
+      h('div', { class: 'row between' }, h('div', { class: 'row', style: { color: 'var(--amber)' } }, icon('users'), h('div', { class: 'h3' }, `طلبات انضمام جديدة (${n})`)), icon('fwd')),
+      h('div', { class: 'small muted' }, 'اضغط للمراجعة والقبول')) : null);
+  }
+
+  drawReady(); drawJoin(); loadNext(); loadAnn(); loadHelp();
   const tick = setInterval(drawReady, 60000);
   const ch = state.sb.channel('home-' + Date.now())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'rides' }, loadNext)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'ride_participants' }, loadNext)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, loadAnn)
     .subscribe();
-  const offs = [on('members', drawReady), on('help', loadHelp)];
+  const offs = [on('members', () => { drawReady(); drawJoin(); }), on('help', loadHelp)];
   return () => { clearInterval(tick); state.sb.removeChannel(ch); offs.forEach((f) => f()); };
 }

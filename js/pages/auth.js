@@ -41,11 +41,11 @@ export function renderAuth(root, { code } = {}) {
   const draw = () => {
     mount(tabs,
       h('button', { class: mode === 'login' ? 'on' : '', role: 'tab', onclick: () => { mode = 'login'; draw(); } }, 'تسجيل الدخول'),
-      h('button', { class: mode === 'signup' ? 'on' : '', role: 'tab', onclick: () => { mode = 'signup'; draw(); } }, 'عندي دعوة'));
+      h('button', { class: mode === 'signup' ? 'on' : '', role: 'tab', onclick: () => { mode = 'signup'; draw(); } }, 'حساب جديد'));
     mount(box, mode === 'login' ? loginForm() : signupForm(code));
   };
   draw();
-  mount(root, h('div', { class: 'auth-wrap' }, brand('قروب خاص للطلعات الليلية — الدخول للأعضاء فقط'), tabs, box));
+  mount(root, h('div', { class: 'auth-wrap' }, brand('سجّل وانضم لطلعات القروب'), tabs, box));
 }
 
 function loginForm() {
@@ -67,41 +67,48 @@ function loginForm() {
 }
 
 function signupForm(prefill) {
-  const code = h('input', { class: 'input code', maxlength: 10, autocomplete: 'off', autocapitalize: 'characters', value: prefill || '', placeholder: 'XXXXXXXXXX' });
   const name = h('input', { class: 'input', maxlength: 40, autocomplete: 'nickname', placeholder: 'مثال: أبو فهد' });
   const email = h('input', { class: 'input', type: 'email', autocomplete: 'email', inputmode: 'email', dir: 'ltr' });
   const pass = h('input', { class: 'input', type: 'password', autocomplete: 'new-password', dir: 'ltr', minlength: 8 });
+  const bike = h('input', { class: 'input', maxlength: 40, placeholder: 'مثال: Suzuki GSX-S750' });
+  const code = h('input', { class: 'input code', maxlength: 10, autocomplete: 'off', autocapitalize: 'characters', value: prefill || '', placeholder: 'XXXXXXXXXX' });
+  const codeField = field('كود الدعوة', code);
+  codeField.hidden = !prefill;
+  const showCode = h('button', { class: 'btn ghost sm', type: 'button', hidden: !!prefill, onclick: () => { codeField.hidden = false; showCode.hidden = true; code.focus(); } }, 'عندي كود دعوة');
   const err = h('div', { class: 'form-error', hidden: true });
-  const btn = h('button', { class: 'btn primary block lg', type: 'submit' }, 'إنشاء الحساب');
+  const btn = h('button', { class: 'btn primary block lg', type: 'submit' }, 'سجّل');
   const form = h('form', { class: 'stack', novalidate: true },
-    field('كود الدعوة', code, 'تحصل عليه من أدمن القروب. صالح لمدة محددة.'),
-    field('اسمك في القروب', name), field('البريد الإلكتروني', email), field('كلمة المرور', pass, '8 أحرف على الأقل'), err, btn,
-    h('div', { class: 'xs muted' }, 'بعد التسجيل يراجع الأدمن طلبك، ولن ترى محتوى القروب حتى تتم الموافقة.'));
+    field('اسمك', name), field('البريد الإلكتروني', email), field('كلمة المرور', pass, '8 أحرف على الأقل'),
+    field('دبابك (اختياري)', bike), codeField, showCode, err, btn,
+    h('div', { class: 'xs muted' }, 'بعد التسجيل يوصل طلبك للأدمن، وأول ما يوافق يفتح لك التطبيق.'));
   const fail = (m) => { err.textContent = m; err.hidden = false; };
   form.onsubmit = async (e) => {
     e.preventDefault();
     if (btn.classList.contains('busy')) return;
     err.hidden = true;
-    const c = code.value.trim().toUpperCase(), n = name.value.trim();
-    if (!/^[A-Z0-9]{10}$/.test(c)) return fail('كود الدعوة يتكون من 10 رموز.');
+    const n = name.value.trim(), c = code.value.trim().toUpperCase();
     if (n.length < 2) return fail('اكتب اسمك (حرفان على الأقل).');
+    if (!/^\S+@\S+\.\S+$/.test(email.value.trim())) return fail('اكتب بريد إلكتروني صحيح.');
     if (pass.value.length < 8) return fail('كلمة المرور 8 أحرف على الأقل.');
-    btn.classList.add('busy'); btn.textContent = 'جارٍ التحقق…';
+    if (c && !/^[A-Z0-9]{10}$/.test(c)) return fail('كود الدعوة يتكون من 10 رموز، أو اتركه فاضي.');
+    btn.classList.add('busy'); btn.textContent = 'جارٍ التسجيل…';
     try {
-      const valid = await must(state.sb.rpc('check_invite', { p_code: c }));
-      if (!valid) throw new Error('invalid_invite');
-      localStorage.setItem(JOIN_KEY, JSON.stringify({ code: c, name: n }));
+      if (c) {
+        const valid = await must(state.sb.rpc('check_invite', { p_code: c }));
+        if (!valid) throw new Error('invalid_invite');
+      }
+      localStorage.setItem(JOIN_KEY, JSON.stringify({ code: c || null, name: n, bike: bike.value.trim() || null }));
       const { data, error } = await state.sb.auth.signUp({ email: email.value.trim(), password: pass.value,
         options: { emailRedirectTo: redirectUrl(), data: { display_name: n } } });
       if (error) throw error;
       if (!data.session) {
         mount(form.parentElement, h('div', { class: 'stack' },
-          h('div', { class: 'form-ok' }, 'تم إنشاء الحساب. افتح رسالة التأكيد في بريدك، ثم ارجع وسجّل الدخول لإكمال الانضمام.'),
-          h('div', { class: 'xs muted' }, 'إذا كان البريد مسجلًا من قبل فلن تصلك رسالة جديدة؛ استخدم «تسجيل الدخول».')));
+          h('div', { class: 'form-ok' }, 'تم التسجيل ✅ افتح رسالة التأكيد في بريدك، وبعدها ارجع وسجّل دخول.'),
+          h('div', { class: 'xs muted' }, 'ما وصلتك الرسالة؟ شيك مجلد Spam. وإذا كان البريد مسجل من قبل، استخدم «تسجيل الدخول».')));
       }
-      // إذا توفرت جلسة مباشرة، ستنتقل البوابة تلقائيًا لإكمال الانضمام
+      // إذا رجعت جلسة مباشرة، البوابة تكمل طلب الانضمام تلقائيًا
     } catch (ex) { fail(errMsg(ex)); }
-    finally { btn.classList.remove('busy'); btn.textContent = 'إنشاء الحساب'; }
+    finally { btn.classList.remove('busy'); btn.textContent = 'سجّل'; }
   };
   return form;
 }
@@ -145,28 +152,33 @@ export function openNewPassword() {
 export function renderJoin(root, { code, onDone }) {
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(JOIN_KEY) || 'null'); } catch { /* */ }
-  const codeIn = h('input', { class: 'input code', maxlength: 10, value: code || saved?.code || '', autocapitalize: 'characters' });
   const nameIn = h('input', { class: 'input', maxlength: 40, value: saved?.name || state.session?.user?.user_metadata?.display_name || '' });
+  const bikeIn = h('input', { class: 'input', maxlength: 40, value: saved?.bike || '', placeholder: 'اختياري' });
+  const codeIn = h('input', { class: 'input code', maxlength: 10, value: code || saved?.code || '', autocapitalize: 'characters', placeholder: 'اختياري' });
   const err = h('div', { class: 'form-error', hidden: true });
-  const btn = h('button', { class: 'btn primary block lg', type: 'submit' }, 'إرسال طلب الانضمام');
+  const btn = h('button', { class: 'btn primary block lg', type: 'submit' }, 'أرسل طلب الانضمام');
   const submit = async () => {
     if (btn.classList.contains('busy')) return;
-    err.hidden = true; btn.classList.add('busy');
+    err.hidden = true;
+    const n = nameIn.value.trim(), c = codeIn.value.trim().toUpperCase();
+    if (n.length < 2) { err.textContent = 'اكتب اسمك (حرفان على الأقل).'; err.hidden = false; return; }
+    btn.classList.add('busy');
     try {
-      await must(state.sb.rpc('redeem_invite', { p_code: codeIn.value.trim().toUpperCase(), p_display_name: nameIn.value.trim() }));
+      if (c) await must(state.sb.rpc('redeem_invite', { p_code: c, p_display_name: n }));
+      else await must(state.sb.rpc('request_join', { p_display_name: n, p_bike_type: bikeIn.value.trim() || null }));
       localStorage.removeItem(JOIN_KEY);
       onDone();
     } catch (e) { err.textContent = errMsg(e); err.hidden = false; }
     finally { btn.classList.remove('busy'); }
   };
   const form = h('form', { class: 'card pad-lg stack', novalidate: true },
-    h('div', { class: 'h2' }, 'أكمل الانضمام'),
-    h('p', { class: 'muted small', style: { margin: 0 } }, 'حسابك مسجّل، لكنه غير مرتبط بالقروب بعد. أدخل كود الدعوة.'),
-    field('كود الدعوة', codeIn), field('اسمك في القروب', nameIn), err, btn,
+    h('div', { class: 'h2' }, 'آخر خطوة'),
+    h('p', { class: 'muted small', style: { margin: 0 } }, 'أكّد اسمك وأرسل طلب الانضمام للأدمن.'),
+    field('اسمك', nameIn), field('دبابك', bikeIn), field('كود الدعوة', codeIn), err, btn,
     h('button', { class: 'btn ghost block', type: 'button', onclick: () => state.sb.auth.signOut() }, 'تسجيل الخروج'));
   form.onsubmit = (e) => { e.preventDefault(); submit(); };
   mount(root, h('div', { class: 'auth-wrap' }, brand(), form));
-  if (codeIn.value.length === 10 && nameIn.value.trim().length >= 2 && saved) submit();
+  if (saved && nameIn.value.trim().length >= 2) submit();   // إكمال تلقائي بعد التسجيل
 }
 
 export function renderPending(root, { onRefresh }) {

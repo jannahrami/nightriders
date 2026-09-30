@@ -20,7 +20,7 @@ export default async function adminPage(root, _p, query) {
   // ----- طلبات الانضمام -----
   function pending() {
     const rows = [...state.members.values()].filter((m) => m.status === 'pending');
-    mount(body, rows.length ? h('div', { class: 'card' }, h('div', { class: 'list' }, ...rows.map((m) => personRow(m, `طلب ${fmtRelative(m.created_at)}`,
+    mount(body, rows.length ? h('div', { class: 'card' }, h('div', { class: 'list' }, ...rows.map((m) => personRow(m, [m.bike_type, `طلب ${fmtRelative(m.created_at)}`].filter(Boolean).join(' · '),
       h('div', { class: 'row', style: { gap: '6px' } },
         actionBtn('قبول', 'sm success', async () => { await must(state.sb.rpc('approve_member', { p_user: m.id })); toast(`تم قبول ${m.display_name}`, 'ok'); refreshMembers(); }, 'check'),
         actionBtn('رفض', 'sm danger-soft', async () => {

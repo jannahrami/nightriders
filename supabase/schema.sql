@@ -476,6 +476,22 @@ begin
   return 'pending';
 end $$;
 
+-- تسجيل مفتوح بدون دعوة: أي حساب جديد يرسل طلب انضمام ويبقى "بانتظار الموافقة" حتى يقبله الأدمن
+create or replace function public.request_join(p_display_name text, p_bike_type text default null) returns text
+language plpgsql security definer set search_path = '' as $$
+declare v_uid uuid := auth.uid(); v_status text;
+begin
+  if v_uid is null then raise exception 'not_authenticated' using errcode = '28000'; end if;
+  select status into v_status from public.profiles where id = v_uid;
+  if v_status is not null then
+    if v_status = 'suspended' then raise exception 'account_suspended' using errcode = '42501'; end if;
+    return v_status;
+  end if;
+  insert into public.profiles (id, display_name, bike_type)
+  values (v_uid, btrim(p_display_name), nullif(btrim(coalesce(p_bike_type, '')), ''));
+  return 'pending';
+end $$;
+
 create or replace function public.create_invite(p_hours int default 72, p_max_uses int default 1, p_note text default null)
 returns public.invites
 language plpgsql security definer set search_path = '' as $$
@@ -703,7 +719,7 @@ revoke execute on all functions in schema public from public, anon, authenticate
 grant execute on function public.check_invite(text) to anon, authenticated;
 grant execute on function
   public.is_active_member(), public.is_admin(), public.is_owner(), public.my_status(), public.can_manage_ride(uuid),
-  public.redeem_invite(text, text), public.create_invite(int, int, text), public.revoke_invite(uuid),
+  public.redeem_invite(text, text), public.request_join(text, text), public.create_invite(int, int, text), public.revoke_invite(uuid),
   public.approve_member(uuid), public.suspend_member(uuid), public.set_admin(uuid, boolean),
   public.set_rsvp(uuid, text), public.set_progress(uuid, text),
   public.create_poll(uuid, text, text, timestamptz, jsonb), public.close_poll(uuid),
