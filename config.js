@@ -15,9 +15,9 @@ window.NR_CONFIG = {
   // اتركها فارغة '' لتعطيل حساب المسار؛ سيعرض التطبيق النقاط فقط.
   routingUrl: 'https://router.project-osrm.org',
 
-  // طبقة الخريطة (داكنة). يجب إبقاء نص الإسناد.
-  tileUrl: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-  tileAttribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+  // طبقة الخريطة (OpenStreetMap، تُعرض داكنة عبر CSS). يجب إبقاء نص الإسناد.
+  tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  tileAttribution: '&copy; OpenStreetMap contributors',
 
   // مركز الخريطة الافتراضي (الرياض)
   defaultCenter: [24.7136, 46.6753],

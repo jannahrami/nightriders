@@ -42,8 +42,8 @@ export function configProblem() {
 export async function initClient({ preview }) {
   state.preview = preview;
   state.cfg = Object.assign({
-    storageBucket: 'nightriders', routingUrl: '', tileUrl: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    tileAttribution: '&copy; OpenStreetMap contributors &copy; CARTO', defaultCenter: [24.7136, 46.6753], defaultZoom: 11,
+    storageBucket: 'nightriders', routingUrl: '', tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    tileAttribution: '&copy; OpenStreetMap contributors', defaultCenter: [24.7136, 46.6753], defaultZoom: 11,
   }, window.NR_CONFIG || {});
   if (preview) {
     const { createMockClient } = await import('./mock.js');

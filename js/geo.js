@@ -189,7 +189,7 @@ export async function makeMap(el, { center, zoom, zoomControl = true } = {}) {
   el.setAttribute('dir', 'ltr');
   const map = L.map(el, { zoomControl, attributionControl: true, tap: true })
     .setView(center || state.cfg.defaultCenter, zoom || state.cfg.defaultZoom);
-  L.tileLayer(state.cfg.tileUrl, { attribution: state.cfg.tileAttribution, subdomains: 'abcd', maxZoom: 19 }).addTo(map);
+  L.tileLayer(state.cfg.tileUrl, { attribution: state.cfg.tileAttribution, maxZoom: 19, className: 'nr-tiles' }).addTo(map);
   map.attributionControl.setPrefix(false);
   setTimeout(() => map.invalidateSize(), 120);
   return { L, map };
