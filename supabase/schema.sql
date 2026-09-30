@@ -471,12 +471,13 @@ begin
   if v_inv.id is null or v_inv.revoked_at is not null or v_inv.expires_at <= now() or v_inv.uses >= v_inv.max_uses then
     raise exception 'invalid_invite' using errcode = '22023';
   end if;
-  insert into public.profiles (id, display_name, invite_id) values (v_uid, btrim(p_display_name), v_inv.id);
+  insert into public.profiles (id, display_name, invite_id, status, approved_at)
+  values (v_uid, btrim(p_display_name), v_inv.id, 'active', now());
   update public.invites set uses = uses + 1 where id = v_inv.id;
-  return 'pending';
+  return 'active';
 end $$;
 
--- تسجيل مفتوح بدون دعوة: أي حساب جديد يرسل طلب انضمام ويبقى "بانتظار الموافقة" حتى يقبله الأدمن
+-- تسجيل مفتوح بدون دعوة: الحساب الجديد يدخل مباشرة (نشط)، والأدمن يقدر يوقفه لاحقًا
 create or replace function public.request_join(p_display_name text, p_bike_type text default null) returns text
 language plpgsql security definer set search_path = '' as $$
 declare v_uid uuid := auth.uid(); v_status text;
@@ -487,9 +488,9 @@ begin
     if v_status = 'suspended' then raise exception 'account_suspended' using errcode = '42501'; end if;
     return v_status;
   end if;
-  insert into public.profiles (id, display_name, bike_type)
-  values (v_uid, btrim(p_display_name), nullif(btrim(coalesce(p_bike_type, '')), ''));
-  return 'pending';
+  insert into public.profiles (id, display_name, bike_type, status, approved_at)
+  values (v_uid, btrim(p_display_name), nullif(btrim(coalesce(p_bike_type, '')), ''), 'active', now());
+  return 'active';
 end $$;
 
 create or replace function public.create_invite(p_hours int default 72, p_max_uses int default 1, p_note text default null)

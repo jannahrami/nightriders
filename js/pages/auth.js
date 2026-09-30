@@ -80,7 +80,7 @@ function signupForm(prefill) {
   const form = h('form', { class: 'stack', novalidate: true },
     field('اسمك', name), field('البريد الإلكتروني', email), field('كلمة المرور', pass, '8 أحرف على الأقل'),
     field('دبابك (اختياري)', bike), codeField, showCode, err, btn,
-    h('div', { class: 'xs muted' }, 'بعد التسجيل يوصل طلبك للأدمن، وأول ما يوافق يفتح لك التطبيق.'));
+    h('div', { class: 'xs muted' }, 'بعد التسجيل تدخل التطبيق على طول.'));
   const fail = (m) => { err.textContent = m; err.hidden = false; };
   form.onsubmit = async (e) => {
     e.preventDefault();
@@ -156,7 +156,7 @@ export function renderJoin(root, { code, onDone }) {
   const bikeIn = h('input', { class: 'input', maxlength: 40, value: saved?.bike || '', placeholder: 'اختياري' });
   const codeIn = h('input', { class: 'input code', maxlength: 10, value: code || saved?.code || '', autocapitalize: 'characters', placeholder: 'اختياري' });
   const err = h('div', { class: 'form-error', hidden: true });
-  const btn = h('button', { class: 'btn primary block lg', type: 'submit' }, 'أرسل طلب الانضمام');
+  const btn = h('button', { class: 'btn primary block lg', type: 'submit' }, 'ادخل');
   const submit = async () => {
     if (btn.classList.contains('busy')) return;
     err.hidden = true;
@@ -173,7 +173,7 @@ export function renderJoin(root, { code, onDone }) {
   };
   const form = h('form', { class: 'card pad-lg stack', novalidate: true },
     h('div', { class: 'h2' }, 'آخر خطوة'),
-    h('p', { class: 'muted small', style: { margin: 0 } }, 'أكّد اسمك وأرسل طلب الانضمام للأدمن.'),
+    h('p', { class: 'muted small', style: { margin: 0 } }, 'أكّد اسمك وادخل التطبيق.'),
     field('اسمك', nameIn), field('دبابك', bikeIn), field('كود الدعوة', codeIn), err, btn,
     h('button', { class: 'btn ghost block', type: 'button', onclick: () => state.sb.auth.signOut() }, 'تسجيل الخروج'));
   form.onsubmit = (e) => { e.preventDefault(); submit(); };

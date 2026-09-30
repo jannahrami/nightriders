@@ -113,10 +113,16 @@ export default async function home(root) {
   // طلبات الانضمام الجديدة (للأدمن فقط)
   function drawJoin() {
     if (!isAdmin()) { mount(joinBox, null); return; }
-    const n = [...state.members.values()].filter((m) => m.status === 'pending').length;
-    mount(joinBox, n ? h('a', { class: 'card link stack', href: '#/admin', style: { gap: '4px', borderColor: 'rgba(245,165,36,.5)' } },
-      h('div', { class: 'row between' }, h('div', { class: 'row', style: { color: 'var(--amber)' } }, icon('users'), h('div', { class: 'h3' }, `طلبات انضمام جديدة (${n})`)), icon('fwd')),
-      h('div', { class: 'small muted' }, 'اضغط للمراجعة والقبول')) : null);
+    const all = [...state.members.values()];
+    const pending = all.filter((m) => m.status === 'pending').length;
+    const week = Date.now() - 7 * 864e5;
+    const fresh = all.filter((m) => m.status === 'active' && m.role === 'member' && !m.approved_by && new Date(m.created_at) > week);
+    const card = (href, title, sub) => h('a', { class: 'card link stack', href, style: { gap: '4px', borderColor: 'rgba(245,165,36,.5)' } },
+      h('div', { class: 'row between' }, h('div', { class: 'row', style: { color: 'var(--amber)' } }, icon('users'), h('div', { class: 'h3' }, title)), icon('fwd')),
+      h('div', { class: 'small muted' }, sub));
+    mount(joinBox,
+      pending ? card('#/admin?tab=pending', `طلبات انضمام (${pending})`, 'اضغط للمراجعة') : null,
+      fresh.length ? card('#/admin?tab=members', `أعضاء جدد هذا الأسبوع (${fresh.length})`, fresh.slice(0, 4).map((m) => m.display_name).join('، ') + ' · تقدر توقف أي أحد مو مناسب') : null);
   }
 
   drawReady(); drawJoin(); loadNext(); loadAnn(); loadHelp();

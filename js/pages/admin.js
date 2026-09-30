@@ -4,7 +4,7 @@ import { state, must, myId, isOwner, loadMembers, member, on } from '../core.js'
 import { personRow } from '../components.js';
 
 export default async function adminPage(root, _p, query) {
-  let tab = query.get('tab') || 'pending';
+  let tab = query.get('tab') || ([...state.members.values()].some((m) => m.status === 'pending') ? 'pending' : 'members');
   const tabs = h('div', { class: 'tabs' });
   const body = h('div', { class: 'stack' });
   mount(root, topbar({ title: 'لوحة الأدمن', back: '#/me' }), h('div', { class: 'content stack-lg' }, tabs, body));
@@ -33,7 +33,7 @@ export default async function adminPage(root, _p, query) {
   // ----- الأعضاء -----
   function members() {
     const all = [...state.members.values()];
-    const active = all.filter((m) => m.status === 'active').sort((a, b) => a.display_name.localeCompare(b.display_name, 'ar'));
+    const active = all.filter((m) => m.status === 'active').sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     const suspended = all.filter((m) => m.status === 'suspended');
     const roleChip = (m) => m.role === 'owner' ? chip('الأساسي', 'violet') : m.role === 'admin' ? chip('أدمن', 'violet') : null;
     const menu = (m) => {
@@ -53,7 +53,7 @@ export default async function adminPage(root, _p, query) {
     };
     mount(body,
       h('div', { class: 'section-head' }, h('div', { class: 'h2' }, `الأعضاء النشطون (${active.length})`)),
-      h('div', { class: 'card' }, h('div', { class: 'list' }, ...active.map((m) => personRow(m, m.city || null, menu(m))))),
+      h('div', { class: 'card' }, h('div', { class: 'list' }, ...active.map((m) => personRow(m, [m.bike_type, m.city, `انضم ${fmtRelative(m.created_at)}`].filter(Boolean).join(' · '), menu(m))))),
       !isOwner() ? h('div', { class: 'xs muted' }, 'تعيين أدمن إضافي وإيقاف الأدمن متاحان للأدمن الأساسي فقط.') : null,
       suspended.length ? h('div', { class: 'section-head' }, h('div', { class: 'h2' }, `موقوفون (${suspended.length})`)) : null,
       suspended.length ? h('div', { class: 'card' }, h('div', { class: 'list' }, ...suspended.map((m) => personRow(m, 'موقوف',
