@@ -1,10 +1,10 @@
 // Service Worker: يخزّن ملفات الواجهة فقط ليفتح التطبيق بسرعة.
 // لا يخزّن أي بيانات من Supabase أبدًا — البيانات تُجلب مباشرة من الخادم.
 // عند نشر نسخة جديدة غيّر رقم VERSION.
-const VERSION = 'nr-v1.1.0';
+const VERSION = 'nr-v1.2.0';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'assets/css/app.css',
-  'assets/icons/icon-192.png', 'assets/icons/icon-512.png', 'assets/icons/apple-touch-icon.png',
+  'assets/img/logo-full.png', 'assets/img/logo-mark.png', 'assets/icons/icon-192.png', 'assets/icons/icon-512.png', 'assets/icons/apple-touch-icon.png',
   'js/app.js', 'js/ui.js', 'js/core.js', 'js/geo.js', 'js/media.js', 'js/components.js', 'js/share-ui.js',
   'js/pages/admin.js', 'js/pages/album.js', 'js/pages/auth.js', 'js/pages/chat.js', 'js/pages/help-new.js',
   'js/pages/help.js', 'js/pages/home.js', 'js/pages/map.js', 'js/pages/member.js', 'js/pages/members.js',
