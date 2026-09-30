@@ -17,7 +17,7 @@ window.NR_CONFIG = {
   // اتركها فارغة '' لتعطيل حساب المسار؛ سيعرض التطبيق النقاط فقط.
   routingUrl: 'https://router.project-osrm.org',
 
-  // طبقة الخريطة (OpenStreetMap، تُعرض داكنة عبر CSS). يجب إبقاء نص الإسناد.
+  // طبقة الخريطة (OpenStreetMap بألوانها الفاتحة). يجب إبقاء نص الإسناد.
   tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   tileAttribution: '&copy; OpenStreetMap contributors',
 
