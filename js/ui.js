@@ -293,7 +293,7 @@ export function topbar({ title, back, actions } = {}) {
   return h('header', { class: 'topbar' },
     back ? h('button', { class: 'icon-btn', 'aria-label': 'رجوع', onclick: () => (history.length > 1 ? history.back() : (location.hash = back)) }, icon('back')) : null,
     title ? h('h1', { class: 'title' }, title)
-          : h('div', { class: 'logo' }, h('div', { class: 'brand-mark', 'aria-hidden': 'true' }), h('div', { class: 'brand-word' }, 'Night', h('b', null, 'Riders'))),
+          : h('div', { class: 'logo' }, h('div', { class: 'brand-mark', 'aria-hidden': 'true' }), h('div', { class: 'brand-word' }, 'Jeddah ', h('b', null, 'Ride'))),
     actions || null);
 }
 

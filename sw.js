@@ -1,7 +1,7 @@
 // Service Worker: يخزّن ملفات الواجهة فقط ليفتح التطبيق بسرعة.
 // لا يخزّن أي بيانات من Supabase أبدًا — البيانات تُجلب مباشرة من الخادم.
 // عند نشر نسخة جديدة غيّر رقم VERSION.
-const VERSION = 'nr-v1.0.3';
+const VERSION = 'nr-v1.1.0';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'assets/css/app.css',
   'assets/icons/icon-192.png', 'assets/icons/icon-512.png', 'assets/icons/apple-touch-icon.png',

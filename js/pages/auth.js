@@ -5,7 +5,7 @@ import { state, must } from '../core.js';
 const JOIN_KEY = 'nr.pendingJoin';
 const brand = (sub) => h('div', { class: 'auth-head' },
   h('div', { class: 'brand-mark', 'aria-hidden': 'true' }),
-  h('div', { class: 'brand-word' }, 'Night', h('b', null, 'Riders')),
+  h('div', { class: 'brand-word' }, 'Jeddah ', h('b', null, 'Ride')),
   sub ? h('p', null, sub) : null);
 
 export function centerCard(title, text, ...actions) {

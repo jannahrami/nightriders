@@ -1,5 +1,5 @@
 // ===============================================================
-//  NightRiders — ملف الإعدادات
+//  Jeddah Ride — ملف الإعدادات
 //  1) انسخ هذا الملف باسم config.js في نفس المجلد.
 //  2) ضع عنوان مشروعك والمفتاح العام (anon / publishable key) من:
 //     Supabase Dashboard ← Project Settings ← API

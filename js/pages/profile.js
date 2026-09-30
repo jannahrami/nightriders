@@ -60,7 +60,7 @@ export default async function profilePage(root) {
         if (sharing.active) { try { await sharing.stop('user'); } catch { /* */ } }
         await state.sb.auth.signOut();
       } }, icon('logout'), 'تسجيل الخروج'),
-      h('div', { class: 'xs muted', style: { textAlign: 'center' } }, h('span', { class: 'en' }, 'NightRiders v1.0')));
+      h('div', { class: 'xs muted', style: { textAlign: 'center' } }, h('span', { class: 'en' }, 'Jeddah Ride v1.0')));
   }
   draw();
   const offs = [on('me', draw)];

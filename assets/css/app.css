@@ -1,5 +1,5 @@
 /* ============================================================
-   NightRiders — تصميم داكن للركوب الليلي (RTL، الجوال أولًا)
+   Jeddah Ride — تصميم داكن للركوب الليلي (RTL، الجوال أولًا)
    ============================================================ */
 :root {
   --bg: #07080d;
@@ -140,7 +140,7 @@ a { color: var(--cyan); text-decoration: none; }
     display: flex; flex-direction: column; gap: 6px; border-top: 0; border-inline-end: 1px solid var(--line);
   }
   .bottom-nav::before {
-    content: "NightRiders"; font-family: -apple-system, "Segoe UI", sans-serif; font-weight: 800; font-size: 22px;
+    content: "Jeddah Ride"; font-family: -apple-system, "Segoe UI", sans-serif; font-weight: 800; font-size: 22px;
     letter-spacing: .04em; padding: 6px 12px 22px; direction: ltr; text-align: right;
   }
   .bottom-nav a { flex-direction: row; justify-content: flex-start; gap: 12px; padding: 12px 14px; border-radius: 12px; font-size: 16px; }

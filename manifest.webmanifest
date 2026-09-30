@@ -1,7 +1,7 @@
 {
-  "name": "NightRiders",
-  "short_name": "NightRiders",
-  "description": "تطبيق مجموعة NightRiders الخاصة للطلعات الليلية",
+  "name": "Jeddah Ride",
+  "short_name": "Jeddah Ride",
+  "description": "تطبيق مجموعة Jeddah Ride الخاصة للطلعات الليلية",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./#/home",
