@@ -1,6 +1,6 @@
 // واجهة مشاركة الموقع: موافقة صريحة، اختيار المدة، زر إيقاف ظاهر
 import { h, icon, openSheet, toast, fmtTime, fmtRemaining, fmtRelative, errMsg } from './ui.js';
-import { on } from './core.js';
+import { on, state, must, myId } from './core.js';
 import { sharing } from './geo.js';
 
 const MAX_H = 12;
@@ -48,8 +48,31 @@ export function openShareConsent({ ride } = {}) {
 /** بطاقة حالة المشاركة مع زر إيقاف ظاهر، تتحدث تلقائيًا */
 export function sharingCard({ compact = false } = {}) {
   const el = h('div');
+  let remote = null;
+  const checkRemote = async () => {
+    if (sharing.active || !myId()) { remote = null; return; }
+    try {
+      remote = await must(state.sb.from('member_locations').select('share_until,updated_at').eq('user_id', myId()).maybeSingle());
+    } catch { remote = null; }
+    draw();
+  };
   const draw = () => {
     if (!sharing.active) {
+      // قد يكون موقعي ما زال ظاهرًا من نافذة أو جهاز آخر: نعرض حالة الخادم الحقيقية
+      if (remote && new Date(remote.share_until) > new Date()) {
+        const stopRemote = h('button', { class: 'btn danger block lg' }, icon('stop'), 'إيقاف مشاركة الموقع');
+        stopRemote.onclick = async () => {
+          stopRemote.classList.add('busy');
+          try { await must(state.sb.rpc('stop_location_sharing')); remote = null; toast('تم إيقاف المشاركة وحذف موقعك', 'ok'); draw(); }
+          catch (e) { toast(errMsg(e), 'err'); stopRemote.classList.remove('busy'); }
+        };
+        el.replaceChildren(h('div', { class: 'stack', style: { gap: '10px' } },
+          h('div', { class: 'row between' }, h('div', { class: 'row' }, icon('locate'), h('div', { class: 'h3' }, 'موقعك ظاهر للأعضاء')),
+            h('span', { class: 'chip amber' }, `باقي ${fmtRemaining(remote.share_until)}`)),
+          h('div', { class: 'xs muted' }, `يُرسَل من نافذة أو جهاز آخر · آخر تحديث ${fmtRelative(remote.updated_at)}`),
+          stopRemote));
+        return;
+      }
       el.replaceChildren(compact ? h('div') : h('div', { class: 'stack', style: { gap: '10px' } },
         h('div', { class: 'row between' }, h('div', { class: 'row' }, icon('locate'), h('div', { class: 'h3' }, 'مشاركة موقعي')), h('span', { class: 'chip' }, 'متوقفة')),
         h('button', { class: 'btn primary block', onclick: () => openShareConsent() }, 'شارك موقعي')));
@@ -72,8 +95,9 @@ export function sharingCard({ compact = false } = {}) {
       stopBtn));
   };
   draw();
-  const off = on('sharing', draw);
-  const t = setInterval(draw, 30000);
+  const off = on('sharing', () => { draw(); checkRemote(); });
+  const t = setInterval(() => { draw(); checkRemote(); }, 30000);
+  checkRemote();
   el._cleanup = () => { off(); clearInterval(t); };
   return el;
 }
