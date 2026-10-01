@@ -403,7 +403,7 @@ begin
   if new.share_until <= now() then
     raise exception 'share_until_past' using errcode = '22023';
   end if;
-  if new.share_until > now() + interval '12 hours' then
+  if new.share_until > now() + interval '12 hours 10 minutes' then   -- 12 ساعة + هامش لفرق ساعة الجوال
     raise exception 'share_too_long' using errcode = '22023';
   end if;
   return new;

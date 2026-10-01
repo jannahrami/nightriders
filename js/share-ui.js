@@ -14,7 +14,7 @@ export function openShareConsent({ ride } = {}) {
       const capped = new Date(Math.min(end ? end.getTime() + 3600e3 : Date.now() + 6 * 3600e3, Date.now() + MAX_H * 3600e3));
       if (capped > new Date()) opts.push({ k: 'ride', t: `طوال الطلعة (حتى ${fmtTime(capped)})`, until: capped, ride: ride.id });
     }
-    opts.push({ k: '30', t: '30 دقيقة', m: 30 }, { k: '60', t: 'ساعة', m: 60 }, { k: '120', t: 'ساعتين', m: 120 }, { k: '240', t: '4 ساعات', m: 240 });
+    opts.push({ k: '30', t: '30 دقيقة', m: 30 }, { k: '60', t: 'ساعة', m: 60 }, { k: '120', t: 'ساعتين', m: 120 }, { k: '240', t: '4 ساعات', m: 240 }, { k: '480', t: '8 ساعات', m: 480 }, { k: '720', t: '12 ساعة', m: 720 });
     let choice = opts[0].k;
     const picks = h('div', { class: 'picker-row' });
     const drawPicks = () => picks.replaceChildren(...opts.map((o) => h('button', { type: 'button', class: 'pick' + (choice === o.k ? ' on' : ''), onclick: () => { choice = o.k; drawPicks(); } }, o.t)));
