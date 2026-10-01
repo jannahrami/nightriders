@@ -277,6 +277,9 @@ export function createMockClient() {
       updateUser: async () => ({ error: { message: 'غير متاح في وضع المعاينة' } }),
     },
     from: (t) => new Query(t),
+    functions: { invoke: async (name, { body } = {}) => (name === 'resolve-link' && /goo\.gl|google\./.test(body?.url || '')
+      ? { data: { lat: 21.8314955, lng: 39.0763156, name: 'نجوم التعديل بجده' }, error: null }
+      : { data: null, error: { message: 'غير متاح في المعاينة' } }) },
     rpc: (n, a) => rpc(n, a),
     storage,
     channel(name) {

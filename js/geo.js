@@ -244,6 +244,18 @@ export async function searchPlaces(q, map) {
   } finally { clearTimeout(t); }
 }
 
+/** يفك روابط Google Maps (حتى المختصرة maps.app.goo.gl) عبر دالة الخادم resolve-link */
+export async function resolveMapLink(text) {
+  const direct = parseLatLng(text);
+  if (direct) return direct;
+  const url = (String(text).match(/https?:\/\/\S+/) || [])[0];
+  if (!url || !/(goo\.gl|google\.)/i.test(url)) return null;
+  if (!state.sb?.functions) return null;
+  const { data, error } = await state.sb.functions.invoke('resolve-link', { body: { url } });
+  if (error || !data || data.lat == null) return null;
+  return { lat: data.lat, lng: data.lng, label: data.name || null };
+}
+
 /** نافذة اختيار نقطة: حرّك الخريطة حتى يكون العلامة في المكان المطلوب */
 export function pickPoint({ title = 'اختر النقطة على الخريطة', initial } = {}) {
   return new Promise((resolve) => {
@@ -261,11 +273,12 @@ export function pickPoint({ title = 'اختر النقطة على الخريطة
       const doSearch = async () => {
         const text = q.value.trim();
         if (text.length < 2 || sBtn.classList.contains('busy')) return;
+        if (/https?:\/\//.test(text)) { manual.value = text; q.value = ''; resolveManual(); return; }
         sBtn.classList.add('busy'); err.hidden = true;
         results.hidden = false; results.replaceChildren(h('div', { class: 'xs muted', style: { padding: '10px' } }, 'جارٍ البحث…'));
         try {
           const rows = await searchPlaces(text, map);
-          if (!rows.length) { results.replaceChildren(h('div', { class: 'xs muted', style: { padding: '10px' } }, 'ما لقيت نتائج. جرّب اسم ثاني أو حرّك الخريطة بنفسك.')); return; }
+          if (!rows.length) { results.replaceChildren(h('div', { class: 'xs muted', style: { padding: '10px' } }, 'ما لقيت نتائج. أسهل طريقة: افتح المكان في Google Maps ← مشاركة ← نسخ الرابط، والصقه في الخانة اللي تحت الخريطة.')); return; }
           results.replaceChildren(...rows.map((r) => h('button', { type: 'button', class: 'search-item', onclick: () => {
             picked = r; results.hidden = true; q.value = r.name;
             if (map) map.setView([r.lat, r.lng], 16); else { manual.value = `${r.lat}, ${r.lng}`; }
@@ -276,8 +289,28 @@ export function pickPoint({ title = 'اختر النقطة على الخريطة
       sBtn.onclick = doSearch;
       q.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
       const searchBox = h('div', { class: 'stack', style: { gap: '6px' } }, h('div', { class: 'row', style: { gap: '8px' } }, q, sBtn), results);
-      const manual = h('input', { class: 'input', placeholder: 'أو الصق إحداثيات / رابط Google Maps', inputmode: 'text' });
+      const manual = h('input', { class: 'input', placeholder: 'الصق رابط المكان من Google Maps', inputmode: 'url' });
       const err = h('div', { class: 'form-error', hidden: true });
+      const linkNote = h('div', { class: 'xs muted', hidden: true });
+      let resolving = false;
+      async function resolveManual() {
+        const v = manual.value.trim();
+        if (!v || resolving) return;
+        if (parseLatLng(v)) { const p = parseLatLng(v); if (map) map.setView([p.lat, p.lng], 16); return; }
+        if (!/https?:\/\//.test(v)) return;
+        resolving = true; err.hidden = true; linkNote.hidden = false; linkNote.textContent = 'جارٍ قراءة الرابط…';
+        try {
+          const r = await resolveMapLink(v);
+          if (!r) { linkNote.hidden = true; err.textContent = 'ما قدرت أقرأ الموقع من هذا الرابط. جرّب تنسخ الرابط من زر «مشاركة» في Google Maps، أو حرّك الخريطة بنفسك.'; err.hidden = false; return; }
+          picked = { lat: r.lat, lng: r.lng, name: r.label || '' };
+          manual.value = `${r.lat}, ${r.lng}`;
+          if (map) map.setView([r.lat, r.lng], 16);
+          linkNote.textContent = r.label ? `✓ ${r.label}` : '✓ تم تحديد المكان من الرابط';
+        } catch { linkNote.hidden = true; err.textContent = 'تعذّر قراءة الرابط الآن. تأكد من الإنترنت.'; err.hidden = false; }
+        finally { resolving = false; }
+      }
+      manual.addEventListener('paste', () => setTimeout(resolveManual, 30));
+      manual.addEventListener('change', resolveManual);
       const update = () => { if (map) { const c = map.getCenter(); coordsTxt.textContent = `${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`; } };
       makeMap(mapEl, { center: initial ? [initial.lat, initial.lng] : undefined, zoom: initial ? 15 : undefined })
         .then(({ map: m }) => { map = m; map.on('move', update); update(); })
@@ -293,16 +326,17 @@ export function pickPoint({ title = 'اختر النقطة على الخريطة
         finally { locBtn.classList.remove('busy'); }
       };
       const ok = h('button', { class: 'btn primary', type: 'button' }, 'اعتماد هذه النقطة');
-      ok.onclick = () => {
+      ok.onclick = async () => {
+        if (/https?:\/\//.test(manual.value)) { await resolveManual(); if (/https?:\/\//.test(manual.value)) return; }
         const typed = parseLatLng(manual.value);
         if (manual.value.trim() && !typed) { err.textContent = 'لم أتعرف على الإحداثيات. مثال: 24.7136, 46.6753'; err.hidden = false; return; }
         if (typed) result = typed;
         else if (map) { const c = map.getCenter(); result = { lat: +c.lat.toFixed(6), lng: +c.lng.toFixed(6) }; }
-        if (result && picked && Math.abs(picked.lat - result.lat) < 0.002 && Math.abs(picked.lng - result.lng) < 0.002) result.label = picked.name;
+        if (result && picked && picked.name && Math.abs(picked.lat - result.lat) < 0.002 && Math.abs(picked.lng - result.lng) < 0.002) result.label = picked.name;
         if (!result) { err.textContent = 'حدد نقطة أولًا.'; err.hidden = false; return; }
         close();
       };
-      return h('div', { class: 'stack' }, searchBox, wrap, h('div', { class: 'row between' }, coordsTxt, locBtn), manual, err,
+      return h('div', { class: 'stack' }, searchBox, wrap, h('div', { class: 'row between' }, coordsTxt, locBtn), manual, linkNote, err,
         h('div', { class: 'btn-row' }, ok, h('button', { class: 'btn', type: 'button', onclick: () => { result = null; close(); } }, 'إلغاء')));
     }, () => { if (map) map.remove(); resolve(result); });
   });
