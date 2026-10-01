@@ -1,7 +1,7 @@
 // Service Worker: يخزّن ملفات الواجهة فقط ليفتح التطبيق بسرعة.
 // لا يخزّن أي بيانات من Supabase أبدًا — البيانات تُجلب مباشرة من الخادم.
 // عند نشر نسخة جديدة غيّر رقم VERSION.
-const VERSION = 'nr-v1.4.1';
+const VERSION = 'nr-v1.5.0';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'assets/css/app.css',
   'assets/img/logo-full.png', 'assets/img/logo-mark.png', 'assets/icons/icon-192-v2.png', 'assets/icons/icon-512-v2.png', 'assets/icons/apple-touch-icon-v2.png',
@@ -9,6 +9,7 @@ const SHELL = [
   'js/pages/admin.js', 'js/pages/album.js', 'js/pages/auth.js', 'js/pages/chat.js', 'js/pages/help-new.js',
   'js/pages/help.js', 'js/pages/home.js', 'js/pages/map.js', 'js/pages/member.js', 'js/pages/members.js',
   'js/pages/profile-edit.js', 'js/pages/profile.js', 'js/pages/ride-form.js', 'js/pages/ride.js', 'js/pages/rides.js',
+  'js/pages/market.js', 'js/pages/listing.js', 'js/pages/listing-form.js',
 ];
 
 self.addEventListener('install', (e) => {

@@ -76,6 +76,7 @@ const P = {
   wrench: '<path d="M14.5 6.5a4 4 0 0 0 5 5L12 19a2.1 2.1 0 0 1-3-3z"/><path d="M14.5 6.5 17 4l3 3-2.5 2.5"/>',
   tire: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v5M12 16v5M3 12h5M16 12h5"/>',
   search: '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
+  tag: '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/>',
   more: '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
 };
 export function icon(name, cls) {
@@ -196,6 +197,8 @@ const ERR = {
   sweep_must_be_participant: 'آخر الركب يجب أن يكون من المشاركين المؤكدين.',
   not_allowed: 'غير مسموح لك بهذه العملية.',
   help_one_open_per_user: 'لديك طلب مساعدة مفتوح بالفعل.',
+  listing_limit: 'وصلت الحد: 5 إعلانات نشطة. علّم إعلانًا كمباع أو احذفه أولًا.',
+  invalid_photo_path: 'صور الإعلان غير صالحة. أعد اختيارها.',
 };
 export function errMsg(e) {
   if (!e) return 'حدث خطأ غير متوقع.';
@@ -268,6 +271,9 @@ export const RSVP = { going: 'مشارك', maybe: 'يمكن', declined: 'معت�
 export const PROGRESS = { on_way: 'في الطريق', arrived: 'وصلت التجمع', returned: 'رجعت بالسلامة' };
 export const STYLE = { calm: 'هادي', touring: 'سياحي', long_distance: 'مسافات طويلة' };
 export const HELP_KIND = { flat_tire: 'بنشر', breakdown: 'عطل', fuel: 'نفاد بنزين', other: 'أخرى' };
+export const MARKET_CAT = { bike: 'دباب', parts: 'قطع', gear: 'خوذ وملابس', accessories: 'إكسسوارات', other: 'أخرى' };
+export const CONDITION = { new: 'جديد', used: 'مستعمل' };
+export function fmtPrice(p) { return p == null ? 'على السوم' : `${Number(p).toLocaleString('en-US')} ريال`; }
 export const STOP_KIND = { fuel: 'محطة بنزين', rest: 'استراحة', other: 'نقطة' };
 
 export function uuid() {

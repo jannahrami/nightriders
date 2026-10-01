@@ -24,6 +24,9 @@ export default async function home(root) {
         h('a', { href: '#/map' }, h('span', { class: 'qi' }, icon('map')), 'الخريطة'),
         h('a', { href: '#/chat' }, h('span', { class: 'qi' }, icon('chat')), 'الشات'),
         h('a', { href: '#/help/new', class: 'sos' }, h('span', { class: 'qi' }, icon('help')), 'أحتاج مساعدة')),
+      h('a', { class: 'card market-link', href: '#/market' }, h('span', { class: 'qi' }, icon('tag')),
+        h('div', { class: 'grow' }, h('div', { style: { fontWeight: 700 } }, 'السوق'), h('div', { class: 'xs muted' }, 'دباب، قطع، خوذ وملابس للبيع بين الشباب')),
+        icon('fwd')),
       meReadyBox,
       readyBox,
       annBox));

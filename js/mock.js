@@ -45,6 +45,11 @@ const db = {
   ],
   help_responders: [],
   ride_media: [],
+  listings: [
+    { id: 'mk-1', user_id: U(2), title: 'BMW R 1250 GS موديل 2021', price: 68000, category: 'bike', condition: 'used', description: 'ممشى 32 ألف، صيانة وكالة، معه شنط جانبية.', city: 'جدة', photos: [], status: 'active', created_at: iso(-3 * H), expires_at: iso(27 * D) },
+    { id: 'mk-2', user_id: U(3), title: 'خوذة Shoei مقاس L', price: 1200, category: 'gear', condition: 'used', description: 'استعمال خفيف.', city: 'جدة', photos: [], status: 'active', created_at: iso(-1 * D), expires_at: iso(29 * D) },
+    { id: 'mk-3', user_id: U(4), title: 'جنوط أصلية', price: null, category: 'parts', condition: 'new', description: null, city: 'الخرج', photos: [], status: 'sold', created_at: iso(-5 * D), expires_at: iso(25 * D) },
+  ],
 };
 // طلعات تجريبية
 const R1 = uid(), R2 = uid(), R3 = uid();
@@ -78,7 +83,7 @@ db.poll_votes.push({ poll_id: P1, option_id: O1, user_id: U(2), voted_at: iso(-5
   .forEach(([, u, body, t]) => db.messages.push({ id: uid(), ride_id: null, user_id: u, client_id: uid(), body, image_path: null, created_at: iso(t) }));
 db.messages.push({ id: uid(), ride_id: R1, user_id: U(2), client_id: uid(), body: 'لا تنسون تعبّون بنزين قبل التجمع', image_path: null, created_at: iso(-2 * H) });
 
-const DEFAULT_ME = { messages: 'user_id', help_requests: 'user_id', help_responders: 'user_id', ride_media: 'user_id', announcements: 'created_by' };
+const DEFAULT_ME = { messages: 'user_id', help_requests: 'user_id', help_responders: 'user_id', ride_media: 'user_id', listings: 'user_id', announcements: 'created_by' };
 const PK = { profiles: ['id'], member_contacts: ['user_id'], ride_participants: ['ride_id', 'user_id'], poll_votes: ['poll_id', 'user_id'], member_locations: ['user_id'], help_responders: ['request_id', 'user_id'] };
 const pk = (t) => PK[t] || ['id'];
 
@@ -145,6 +150,10 @@ class Query {
         if (!row.created_at) row.created_at = new Date().toISOString();
         if (DEFAULT_ME[this.t] && !row[DEFAULT_ME[this.t]]) row[DEFAULT_ME[this.t]] = ME;
         if (this.t === 'rides') { row.created_by = ME; row.organizer_id = row.organizer_id || ME; row.status = 'planned'; }
+        if (this.t === 'listings') {
+          row.status = 'active'; row.expires_at = new Date(Date.now() + 30 * D).toISOString();
+          if (table.filter((x) => x.user_id === ME && x.status === 'active' && x.expires_at > new Date().toISOString()).length >= 5) return err('listing_limit');
+        }
         if (this.t === 'help_requests') {
           row.status = 'open';
           if (table.some((x) => x.user_id === ME && x.status === 'open')) return err('duplicate key value violates unique constraint "help_one_open_per_user"', '23505');
@@ -225,6 +234,7 @@ function rpc(name, a = {}) {
     case 'approve_member': { const p = P(a.p_user); p.status = 'active'; notify('profiles', 'UPDATE', { ...p }); return ok(); }
     case 'suspend_member': { const p = P(a.p_user); p.status = 'suspended'; p.role = 'member'; db.member_locations = db.member_locations.filter((x) => x.user_id !== p.id); notify('profiles', 'UPDATE', { ...p }); return ok(); }
     case 'set_admin': { const p = P(a.p_user); p.role = a.p_is_admin ? 'admin' : 'member'; notify('profiles', 'UPDATE', { ...p }); return ok(); }
+    case 'renew_listing': { const l = db.listings.find((x) => x.id === a.p_listing && x.user_id === ME); if (!l) return Promise.resolve(err('not_allowed')); l.expires_at = new Date(Date.now() + 30 * D).toISOString(); notify('listings', 'UPDATE', { ...l }); return ok(l.expires_at); }
     case 'check_invite': return ok(true);
     case 'request_join': return ok('active');
     default: return Promise.resolve(err(`${name} غير متاح في المعاينة`));

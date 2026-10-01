@@ -49,6 +49,7 @@ export default async function profilePage(root) {
       h('div', { class: 'card stack', style: { gap: '8px' } },
         h('a', { class: 'btn block', href: '#/members' }, icon('users'), 'أعضاء القروب'),
         h('a', { class: 'btn block', href: '#/help' }, icon('help'), 'طلبات المساعدة'),
+        h('a', { class: 'btn block', href: '#/market' }, icon('tag'), 'السوق'),
         isAdmin() ? h('a', { class: 'btn primary block', href: '#/admin' }, icon('shield'), 'لوحة الأدمن') : null),
 
       !isStandalone() ? h('div', { class: 'notice' }, icon('info'), h('div', null,

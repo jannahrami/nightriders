@@ -24,6 +24,10 @@ const ROUTES = [
   [/^member\/([\w-]+)$/, () => import('./pages/member.js'), 'me'],
   [/^help$/, () => import('./pages/help.js'), 'home'],
   [/^help\/new$/, () => import('./pages/help-new.js'), 'home'],
+  [/^market$/, () => import('./pages/market.js'), 'home'],
+  [/^market\/new$/, () => import('./pages/listing-form.js'), 'home'],
+  [/^market\/([\w-]+)$/, () => import('./pages/listing.js'), 'home'],
+  [/^market\/([\w-]+)\/edit$/, () => import('./pages/listing-form.js'), 'home'],
   [/^admin$/, () => import('./pages/admin.js'), 'me'],
 ];
 
