@@ -314,16 +314,37 @@ export function chip(text, cls, ic) { return h('span', { class: 'chip ' + (cls |
 
 /** يجعل العنصر يملأ المساحة المتبقية من الشاشة (يتكيف مع الشريط العلوي ولوحة المفاتيح) */
 export function fitToViewport(el) {
+  // يضبط ارتفاع الصفحة على الجزء الظاهر من الشاشة (مع الكيبورد وبدونه).
+  // iPhone يغيّر المقاسات على مراحل أثناء فتح/قفل الكيبورد، فنعيد القياس بعد كل حدث عدة مرات.
   const fit = () => {
-    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    const top = el.getBoundingClientRect().top + window.scrollY;
+    const vv = window.visualViewport;
+    const kbOpen = vv && window.innerHeight - vv.height > 120;
+    if (!kbOpen && window.scrollY > 0) window.scrollTo(0, 0);
+    const vh = vv ? vv.height : window.innerHeight;
+    const top = el.getBoundingClientRect().top + (kbOpen ? window.scrollY : 0);
     el.style.height = Math.max(320, vh - top) + 'px';
   };
+  const timers = new Set();
+  const schedule = () => {
+    fit();
+    [80, 250, 500, 900].forEach((ms) => { const t = setTimeout(() => { timers.delete(t); fit(); }, ms); timers.add(t); });
+  };
   requestAnimationFrame(fit);
-  const t = setTimeout(fit, 300);
-  window.addEventListener('resize', fit);
-  window.visualViewport?.addEventListener('resize', fit);
+  schedule();
+  window.addEventListener('resize', schedule);
+  window.visualViewport?.addEventListener('resize', schedule);
+  window.visualViewport?.addEventListener('scroll', schedule);
+  document.addEventListener('focusin', schedule);
+  document.addEventListener('focusout', schedule);
   const obs = new MutationObserver(fit);
   ['net-banner', 'preview-banner'].forEach((id) => { const b = document.getElementById(id); if (b) obs.observe(b, { attributes: true }); });
-  return () => { clearTimeout(t); window.removeEventListener('resize', fit); window.visualViewport?.removeEventListener('resize', fit); obs.disconnect(); };
+  return () => {
+    timers.forEach(clearTimeout);
+    window.removeEventListener('resize', schedule);
+    window.visualViewport?.removeEventListener('resize', schedule);
+    window.visualViewport?.removeEventListener('scroll', schedule);
+    document.removeEventListener('focusin', schedule);
+    document.removeEventListener('focusout', schedule);
+    obs.disconnect();
+  };
 }
