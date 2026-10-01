@@ -280,3 +280,19 @@ PGHOST=localhost PGUSER=postgres ./tests/run_tests.sh
 - **أحداث الحذف في التحديث المباشر:** Supabase لا يطبّق عليها RLS، لكنها تحمل المعرّف فقط، بلا محتوى.
 - **إضافة ميزة جديدة:** أضف الجدول وسياساته في `schema.sql`، ثم صفحة في `js/pages/`، ثم مسارًا في `ROUTES` داخل `js/app.js`، وأضف الملف لقائمة `SHELL` في `sw.js`.
 - **نقل ملكية الأدمن الأساسي:** غير متاح من الواجهة عمدًا. عند الحاجة يُنفَّذ يدويًا من SQL Editor.
+
+## الإشعارات (Web Push)
+
+تصل للجوال حتى والتطبيق مقفول: طلعة جديدة، طلب فزعة، رسالة في الشات (العام، أو شات طلعة أنت مشارك فيها).
+كل عضو يفعّلها من «حسابي ← الإشعارات» ويختار الأنواع. في iPhone تعمل فقط بعد إضافة التطبيق للشاشة الرئيسية (iOS 16.4+).
+
+كيف تعمل: Trigger على `rides` و`help_requests` و`messages` يرسل الحدث عبر `pg_net` لدالة الحافة `notify`
+(`supabase/functions/notify`)، والدالة تختار المستلمين بـ `push_targets` وترسل الإشعار المشفّر.
+
+لتجهيز نسخة جديدة:
+1. شغّل `schema.sql` (يشمل قسم 12).
+2. أنشئ مفاتيح VAPID (زوج ECDSA P-256 بصيغة JWK) وسرًّا عشوائيًا، ثم في SQL Editor:
+   `insert into private.app_secrets(key,value) values ('vapid','{"publicKey":{...},"privateKey":{...}}'), ('notify_secret','<سر عشوائي>'), ('contact','https://<رابط التطبيق>/'), ('notify_url','https://<project-ref>.supabase.co/functions/v1/notify');`
+3. انشر الدالة `notify` بدون تحقق JWT (هي تتحقق من `x-nr-secret` بنفسها).
+4. ضع المفتاح العام (raw, base64url) في `config.js` باسم `pushPublicKey`.
+لا تضع المفتاح الخاص في الواجهة أو في Git أبدًا.

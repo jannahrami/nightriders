@@ -123,6 +123,7 @@ async function bootApp() {
   startGlobalRealtime();
   sharing.resume();
   updateHelpDot();
+  import('./push.js').then((m) => m.syncPush()).catch(() => {});
   if (/^#\/?join/.test(location.hash) || !location.hash) location.hash = '#/home';
   await route();
 }
@@ -187,5 +188,7 @@ async function start() {
 
 if ('serviceWorker' in navigator && location.protocol === 'https:' && !window.NR_FORCE_PREVIEW) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  // فتح الصفحة المناسبة عند الضغط على إشعار والتطبيق مفتوح
+  navigator.serviceWorker.addEventListener('message', (e) => { if (e.data?.type === 'nr-nav' && e.data.url) location.hash = e.data.url; });
 }
 start();

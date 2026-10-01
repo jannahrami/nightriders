@@ -3,6 +3,7 @@ import { h, mount, icon, topbar, chip, loadingView, errorView, emptyView, fmtDat
 import { state, must, on, myId, member, isReady, isAdmin } from '../core.js';
 import { avatar } from '../media.js';
 import { statusChip, rsvpControl, participationFor } from '../components.js';
+import { notifNudge } from '../push-ui.js';
 
 export default async function home(root) {
   const nextBox = h('div', null, loadingView());
@@ -16,6 +17,7 @@ export default async function home(root) {
   mount(root, topbar({ actions: h('a', { class: 'icon-btn', href: '#/me', 'aria-label': 'حسابي' }, avatar(me, 'sm')) }),
     h('div', { class: 'content stack-lg' },
       h('div', null, h('div', { class: 'muted small' }, 'أهلًا'), h('div', { class: 'h1' }, me.display_name)),
+      notifNudge(),
       joinBox,
       helpBox,
       nextBox,

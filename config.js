@@ -11,6 +11,9 @@ window.NR_CONFIG = {
   // حاوية التخزين (مطابقة لملف schema.sql)
   storageBucket: 'nightriders',
 
+  // مفتاح الإشعارات العام (VAPID public key) — عام وآمن للواجهة
+  pushPublicKey: 'BAfHqsuPeR7WqKkIsQkvv6dQkxnM5FbUN5hwkWSu8ZMkiD7rxKxtKDsqJNO1VRLuOkoDdO5t45jU5ya9hedRAMI',
+
   // خدمة حساب المسار والمسافة (OSRM). الخادم العام تجريبي ومحدود الاستخدام.
   // اتركها فارغة '' لتعطيل حساب المسار؛ سيعرض التطبيق النقاط فقط.
   routingUrl: 'https://router.project-osrm.org',

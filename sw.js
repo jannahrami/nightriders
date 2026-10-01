@@ -1,11 +1,11 @@
 // Service Worker: يخزّن ملفات الواجهة فقط ليفتح التطبيق بسرعة.
 // لا يخزّن أي بيانات من Supabase أبدًا — البيانات تُجلب مباشرة من الخادم.
 // عند نشر نسخة جديدة غيّر رقم VERSION.
-const VERSION = 'nr-v1.6.1';
+const VERSION = 'nr-v1.7.0';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'assets/css/app.css',
   'assets/img/logo-full.png', 'assets/img/logo-mark.png', 'assets/icons/icon-192-v2.png', 'assets/icons/icon-512-v2.png', 'assets/icons/apple-touch-icon-v2.png',
-  'js/app.js', 'js/ui.js', 'js/core.js', 'js/geo.js', 'js/media.js', 'js/components.js', 'js/share-ui.js',
+  'js/app.js', 'js/push.js', 'js/push-ui.js', 'js/ui.js', 'js/core.js', 'js/geo.js', 'js/media.js', 'js/components.js', 'js/share-ui.js',
   'js/pages/admin.js', 'js/pages/album.js', 'js/pages/auth.js', 'js/pages/chat.js', 'js/pages/help-new.js',
   'js/pages/help.js', 'js/pages/home.js', 'js/pages/map.js', 'js/pages/member.js', 'js/pages/members.js',
   'js/pages/profile-edit.js', 'js/pages/profile.js', 'js/pages/ride-form.js', 'js/pages/ride.js', 'js/pages/rides.js',
@@ -42,4 +42,26 @@ self.addEventListener('fetch', (e) => {
     if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
     return res;
   }).catch(() => caches.match(req, { ignoreSearch: true })));
+});
+
+// ---------- الإشعارات ----------
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch { d = { title: 'Jeddah Ride', body: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'Jeddah Ride', {
+    body: d.body || '', tag: d.tag || undefined, renotify: !!d.tag, lang: 'ar', dir: 'rtl',
+    icon: 'assets/icons/icon-192-v2.png', badge: 'assets/icons/icon-192-v2.png',
+    data: { url: d.url || '#/home' }, requireInteraction: !!d.urgent,
+  }));
+});
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const hash = (e.notification.data && e.notification.data.url) || '#/home';
+  const target = new URL(self.registration.scope).href + hash;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+    for (const c of list) {
+      if (c.url.startsWith(self.registration.scope)) { c.postMessage({ type: 'nr-nav', url: hash }); return c.focus(); }
+    }
+    return self.clients.openWindow(target);
+  }));
 });

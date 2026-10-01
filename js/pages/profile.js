@@ -4,6 +4,8 @@ import { state, must, myId, isAdmin, isOwner, on, isReady } from '../core.js';
 import { avatar, privateImg } from '../media.js';
 import { sharing } from '../geo.js';
 import { sharingCard } from '../share-ui.js';
+import { detachPush } from '../push.js';
+import { notifCard } from '../push-ui.js';
 
 export default async function profilePage(root) {
   const body = h('div', { class: 'content stack-lg' });
@@ -45,6 +47,7 @@ export default async function profilePage(root) {
           : h('div', { class: 'btn-row' }, actionBtn('ساعة', '', () => setReady(1)), actionBtn('ساعتين', '', () => setReady(2)), actionBtn('4 ساعات', '', () => setReady(4)))),
 
       h('div', { class: 'card' }, share),
+      h('div', { class: 'card' }, notifCard()),
 
       h('div', { class: 'card stack', style: { gap: '8px' } },
         h('a', { class: 'btn block', href: '#/members' }, icon('users'), 'أعضاء القروب'),
@@ -59,6 +62,7 @@ export default async function profilePage(root) {
       h('button', { class: 'btn ghost block', onclick: async () => {
         if (!(await confirmDialog('تسجيل الخروج من هذا الجهاز؟', { ok: 'خروج' }))) return;
         if (sharing.active) { try { await sharing.stop('user'); } catch { /* */ } }
+        await detachPush();
         await state.sb.auth.signOut();
       } }, icon('logout'), 'تسجيل الخروج'),
       h('div', { class: 'xs muted', style: { textAlign: 'center' } }, h('span', { class: 'en' }, 'Jeddah Ride v1.0')));
