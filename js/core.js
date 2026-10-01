@@ -43,7 +43,7 @@ export async function initClient({ preview }) {
   state.preview = preview;
   state.cfg = Object.assign({
     storageBucket: 'nightriders', routingUrl: '', tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    tileAttribution: '&copy; OpenStreetMap contributors', defaultCenter: [24.7136, 46.6753], defaultZoom: 11,
+    tileAttribution: '&copy; OpenStreetMap contributors', defaultCenter: [21.5433, 39.1728], defaultZoom: 11,
   }, window.NR_CONFIG || {});
   if (preview) {
     const { createMockClient } = await import('./mock.js');

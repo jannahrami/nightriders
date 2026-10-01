@@ -37,7 +37,7 @@ export default async function rideForm(root, params) {
     const drawC = () => { coords.textContent = st.lat != null ? `${st.lat.toFixed(5)}, ${st.lng.toFixed(5)}` : 'لم تُحدد نقطة'; clr.hidden = st.lat == null; };
     btn.onclick = async () => {
       const p = await pickPoint({ title: label, initial: st.lat != null ? st : null });
-      if (p) { st.lat = p.lat; st.lng = p.lng; drawC(); }
+      if (p) { st.lat = p.lat; st.lng = p.lng; drawC(); if (p.label && !name.value.trim()) name.value = p.label; }
     };
     clr.onclick = () => { st.lat = null; st.lng = null; drawC(); };
     drawC();
@@ -59,7 +59,7 @@ export default async function rideForm(root, params) {
     drawC();
     const pickB = h('button', { class: 'btn sm', type: 'button', onclick: async () => {
       const p = await pickPoint({ title: 'موقع المحطة', initial: row.lat != null ? row : (meet.st.lat != null ? meet.st : null) });
-      if (p) { row.lat = p.lat; row.lng = p.lng; drawC(); }
+      if (p) { row.lat = p.lat; row.lng = p.lng; drawC(); if (p.label && !name.value.trim()) name.value = p.label; }
     } }, icon('pin'), 'النقطة');
     const card = h('div', { class: 'card stack', style: { padding: '12px', gap: '8px' } },
       h('div', { class: 'row' }, kind, h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'حذف المحطة', onclick: () => { stopRows.splice(stopRows.indexOf(row), 1); card.remove(); } }, icon('trash'))),

@@ -218,6 +218,24 @@ export function parseLatLng(text) {
   return null;
 }
 
+
+// ---------- البحث عن مكان بالاسم (OpenStreetMap Nominatim) ----------
+let lastSearch = 0;
+export async function searchPlaces(q, map) {
+  const wait = 1100 - (Date.now() - lastSearch);         // سياسة الخدمة: طلب واحد بالثانية كحد أقصى
+  if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+  lastSearch = Date.now();
+  const params = new URLSearchParams({ format: 'jsonv2', q, countrycodes: 'sa', 'accept-language': 'ar', limit: '7', addressdetails: '0' });
+  if (map) { const b = map.getBounds().pad(2); params.set('viewbox', `${b.getWest()},${b.getNorth()},${b.getEast()},${b.getSouth()}`); }
+  const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, { signal: ctrl.signal });
+    if (!r.ok) throw new Error('search_failed');
+    const rows = await r.json();
+    return rows.map((x) => ({ lat: +x.lat, lng: +x.lon, name: x.name || x.display_name.split('،')[0].split(',')[0], full: x.display_name }));
+  } finally { clearTimeout(t); }
+}
+
 /** نافذة اختيار نقطة: حرّك الخريطة حتى يكون العلامة في المكان المطلوب */
 export function pickPoint({ title = 'اختر النقطة على الخريطة', initial } = {}) {
   return new Promise((resolve) => {
@@ -228,6 +246,28 @@ export function pickPoint({ title = 'اختر النقطة على الخريطة
       cross.firstChild.setAttribute('width', '40'); cross.firstChild.setAttribute('height', '40');
       const wrap = h('div', { style: { position: 'relative' } }, mapEl, cross);
       const coordsTxt = h('div', { class: 'xs muted ltr' }, '');
+      let picked = null;   // آخر مكان اختير من البحث
+      const q = h('input', { class: 'input', type: 'search', placeholder: 'ابحث عن مكان: محطة، كوفي، حي…', enterkeyhint: 'search' });
+      const results = h('div', { class: 'search-results', hidden: true });
+      const sBtn = h('button', { class: 'btn', type: 'button', 'aria-label': 'بحث' }, icon('search'));
+      const doSearch = async () => {
+        const text = q.value.trim();
+        if (text.length < 2 || sBtn.classList.contains('busy')) return;
+        sBtn.classList.add('busy'); err.hidden = true;
+        results.hidden = false; results.replaceChildren(h('div', { class: 'xs muted', style: { padding: '10px' } }, 'جارٍ البحث…'));
+        try {
+          const rows = await searchPlaces(text, map);
+          if (!rows.length) { results.replaceChildren(h('div', { class: 'xs muted', style: { padding: '10px' } }, 'ما لقيت نتائج. جرّب اسم ثاني أو حرّك الخريطة بنفسك.')); return; }
+          results.replaceChildren(...rows.map((r) => h('button', { type: 'button', class: 'search-item', onclick: () => {
+            picked = r; results.hidden = true; q.value = r.name;
+            if (map) map.setView([r.lat, r.lng], 16); else { manual.value = `${r.lat}, ${r.lng}`; }
+          } }, h('b', null, r.name), h('span', null, r.full))));
+        } catch { results.replaceChildren(h('div', { class: 'xs muted', style: { padding: '10px' } }, 'تعذّر البحث الآن. تأكد من الإنترنت، أو حرّك الخريطة بنفسك.')); }
+        finally { sBtn.classList.remove('busy'); }
+      };
+      sBtn.onclick = doSearch;
+      q.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
+      const searchBox = h('div', { class: 'stack', style: { gap: '6px' } }, h('div', { class: 'row', style: { gap: '8px' } }, q, sBtn), results);
       const manual = h('input', { class: 'input', placeholder: 'أو الصق إحداثيات / رابط Google Maps', inputmode: 'text' });
       const err = h('div', { class: 'form-error', hidden: true });
       const update = () => { if (map) { const c = map.getCenter(); coordsTxt.textContent = `${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`; } };
@@ -250,10 +290,11 @@ export function pickPoint({ title = 'اختر النقطة على الخريطة
         if (manual.value.trim() && !typed) { err.textContent = 'لم أتعرف على الإحداثيات. مثال: 24.7136, 46.6753'; err.hidden = false; return; }
         if (typed) result = typed;
         else if (map) { const c = map.getCenter(); result = { lat: +c.lat.toFixed(6), lng: +c.lng.toFixed(6) }; }
+        if (result && picked && Math.abs(picked.lat - result.lat) < 0.002 && Math.abs(picked.lng - result.lng) < 0.002) result.label = picked.name;
         if (!result) { err.textContent = 'حدد نقطة أولًا.'; err.hidden = false; return; }
         close();
       };
-      return h('div', { class: 'stack' }, wrap, h('div', { class: 'row between' }, coordsTxt, locBtn), manual, err,
+      return h('div', { class: 'stack' }, searchBox, wrap, h('div', { class: 'row between' }, coordsTxt, locBtn), manual, err,
         h('div', { class: 'btn-row' }, ok, h('button', { class: 'btn', type: 'button', onclick: () => { result = null; close(); } }, 'إلغاء')));
     }, () => { if (map) map.remove(); resolve(result); });
   });

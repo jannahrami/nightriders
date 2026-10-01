@@ -21,7 +21,7 @@ window.NR_CONFIG = {
   tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   tileAttribution: '&copy; OpenStreetMap contributors',
 
-  // مركز الخريطة الافتراضي (الرياض)
-  defaultCenter: [24.7136, 46.6753],
+  // مركز الخريطة الافتراضي (جدة)
+  defaultCenter: [21.5433, 39.1728],
   defaultZoom: 11,
 };
