@@ -1,4 +1,4 @@
-// دالة الحافة notify: تستقبل حدث (طلعة/مساعدة/رسالة/طلب انضمام/قبول) من Trigger قاعدة البيانات وترسل إشعارات Web Push.
+// دالة الحافة notify: تستقبل حدث (طلعة/تذكير/مساعدة/رسالة/طلب انضمام/قبول) من Trigger قاعدة البيانات وترسل إشعارات Web Push.
 // الحماية: لا تقبل إلا طلبًا يحمل x-nr-secret المطابق للقيمة في private.app_secrets.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import * as webpush from "jsr:@negrel/webpush@0.5.0";
@@ -57,6 +57,12 @@ async function build(table: string, r: any) {
     const until = new Intl.DateTimeFormat("ar-SA-u-ca-gregory-nu-latn", { timeZone: "Asia/Riyadh", hour: "numeric", minute: "2-digit" }).format(new Date(r.ready_until));
     return { kind: "ready", ride: null, exclude: r.id,
       msg: { title: `⚡ ${who} جاهز يطلع`, body: `فاضي لين ${until} — تطلع معه؟`, url: "#/home", tag: `ready-${r.id}`, urgent: false } };
+  }
+  if (table === "reminder") {
+    const at = new Intl.DateTimeFormat("ar-SA-u-ca-gregory-nu-latn", { timeZone: "Asia/Riyadh", hour: "numeric", minute: "2-digit" }).format(new Date(r.meet_at));
+    return { kind: "reminder", ride: r.id, exclude: null,
+      msg: { title: cut(`⏰ ${r.title} بعد ساعة`, 80), body: cut(`التجمع الساعة ${at}${r.meet_name ? " · " + r.meet_name : ""} — جهّز دبابك 🏍️`, 180),
+        url: `#/ride/${r.id}`, tag: `reminder-${r.id}`, urgent: true } };
   }
   if (table === "join") {
     return { kind: "join", ride: null, exclude: r.id, user: null,
