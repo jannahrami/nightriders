@@ -3,6 +3,7 @@ import { h, mount, icon, toast, errMsg } from './ui.js';
 import { state, on, initClient, configProblem, loadMe, loadMembers, startGlobalRealtime, stopGlobalRealtime, initNetwork, isAdmin, myId } from './core.js';
 import { sharing } from './geo.js';
 import * as auth from './pages/auth.js';
+import * as voice from './voice.js';
 
 const app = document.getElementById('app');
 let shell = null, pageRoot = null, navEl = null, cleanup = null, appBooted = false, routeSeq = 0;
@@ -33,6 +34,7 @@ const ROUTES = [
   [/^places\/(repair|parts|rental|fuel|other)$/, () => import('./pages/places.js'), 'map'],
   [/^place\/([\w-]+)\/edit$/, () => import('./pages/place-form.js'), 'map'],
   [/^admin$/, () => import('./pages/admin.js'), 'me'],
+  [/^voice$/, () => import('./pages/voice.js'), 'chat'],
 ];
 
 function currentPath() {
@@ -54,6 +56,28 @@ function buildShell() {
   shell = h('div', { class: 'shell' }, pageRoot, navEl);
   mount(app, shell);
   pinNav(navEl);
+  voicePill();
+}
+// شريط صغير يظهر وأنت في الغرفة الصوتية وتتنقل في صفحات ثانية
+let voicePillOff = null;
+function voicePill() {
+  voicePillOff?.();
+  const pill = h('div', { class: 'voice-pill', hidden: true });
+  shell.appendChild(pill);
+  const draw = () => {
+    const vi = voice.voiceInfo();
+    const onPage = /^#\/?voice/.test(location.hash);
+    pill.hidden = vi.status !== 'in' || onPage;
+    if (pill.hidden) return;
+    mount(pill,
+      h('a', { href: '#/voice' }, icon('mic'), h('span', null, `أنت في الغرفة الصوتية · ${vi.count}`)),
+      h('button', { type: 'button', class: vi.muted ? 'off' : '', 'aria-label': vi.muted ? 'افتح المايك' : 'اكتم', onclick: voice.toggleMute }, icon(vi.muted ? 'micoff' : 'mic')),
+      h('button', { type: 'button', class: 'leave', 'aria-label': 'خروج', onclick: voice.leave }, icon('phoneoff')));
+  };
+  const off = on('voice', draw);
+  window.addEventListener('hashchange', draw);
+  voicePillOff = () => { off(); window.removeEventListener('hashchange', draw); };
+  draw();
 }
 // iPhone (خصوصًا iOS 26) أحيانًا يترك الشريط السفلي معلّقًا في نص الشاشة بعد ما ينقفل الكيبورد.
 // نقيس مكانه الفعلي ونرجّعه لأسفل الشاشة المرئية.
@@ -152,7 +176,7 @@ async function gate() {
   }
   if (!me) { appBooted = false; auth.renderJoin(app, { code: query.get('code'), onDone: gate }); return; }
   if (me.status === 'pending') { appBooted = false; startGlobalRealtime(); auth.renderPending(app, { onRefresh: gate }); import('./push.js').then((m) => m.syncPush()).catch(() => {}); return; }
-  if (me.status === 'suspended') { appBooted = false; sharing.haltLocal(); stopGlobalRealtime(); auth.renderSuspended(app); return; }
+  if (me.status === 'suspended') { appBooted = false; sharing.haltLocal(); stopGlobalRealtime(); voice.stopVoice(); auth.renderSuspended(app); return; }
   await bootApp();
 }
 
@@ -161,6 +185,7 @@ async function bootApp() {
   buildShell();
   appBooted = true;
   startGlobalRealtime();
+  voice.initVoice();
   sharing.resume();
   updateHelpDot();
   import('./push.js').then((m) => m.syncPush()).catch(() => {});
@@ -199,7 +224,7 @@ async function start() {
     state.session = session;
     if (event === 'PASSWORD_RECOVERY') { auth.openNewPassword(); return; }
     if (event === 'SIGNED_OUT') {
-      sharing.haltLocal(); stopGlobalRealtime(); appBooted = false; state.me = null; state.members = new Map();
+      sharing.haltLocal(); stopGlobalRealtime(); voice.stopVoice(); appBooted = false; state.me = null; state.members = new Map();
       gate(); return;
     }
     if (event === 'SIGNED_IN' && session?.user?.id !== prevUser) setTimeout(gate, 0);

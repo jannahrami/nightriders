@@ -17,7 +17,7 @@ export function notifCard() {
     head.style.justifyContent = 'space-between';
     if (st === 'on') {
       let prefs;
-      try { prefs = await loadPrefs(); } catch { prefs = { rides: true, help: true, chat: true, ready: true }; }
+      try { prefs = await loadPrefs(); } catch { prefs = { rides: true, help: true, chat: true, ready: true, voice: true }; }
       const row = (key, label, hint) => {
         const inp = h('input', { type: 'checkbox', checked: !!prefs[key], 'aria-label': label });
         inp.onchange = async () => {
@@ -32,6 +32,7 @@ export function notifCard() {
         row('rides', 'طلعة جديدة', 'لما أحد ينشر طلعة'),
         row('help', 'طلبات الفزعة', 'لما أحد يحتاج مساعدة'),
         row('ready', 'جاهز أطلع', 'لما أحد من الشباب يفعّل «جاهز أطلع»'),
+        row('voice', 'غرفة المحادثة الصوتية', 'لما أحد يفتح الغرفة الصوتية'),
         row('chat', 'رسائل الشات', 'الشات العام، وشات الطلعات اللي أنت مشارك فيها'),
         actionBtn('إيقاف الإشعارات على هذا الجهاز', 'ghost block', async () => { await disablePush(); toast('تم الإيقاف', 'ok'); draw(); }));
     } else if (st === 'off') {

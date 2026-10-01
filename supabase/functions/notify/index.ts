@@ -1,4 +1,4 @@
-// دالة الحافة notify: تستقبل حدث (طلعة/تذكير/مساعدة/رسالة/طلب انضمام/قبول) من Trigger قاعدة البيانات وترسل إشعارات Web Push.
+// دالة الحافة notify: تستقبل حدث (طلعة/تذكير/غرفة صوتية/مساعدة/رسالة/طلب انضمام/قبول) من Trigger قاعدة البيانات وترسل إشعارات Web Push.
 // الحماية: لا تقبل إلا طلبًا يحمل x-nr-secret المطابق للقيمة في private.app_secrets.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import * as webpush from "jsr:@negrel/webpush@0.5.0";
@@ -64,6 +64,11 @@ async function build(table: string, r: any) {
       msg: { title: cut(`⏰ ${r.title} بعد ساعة`, 80), body: cut(`التجمع الساعة ${at}${r.meet_name ? " · " + r.meet_name : ""} — جهّز دبابك 🏍️`, 180),
         url: `#/ride/${r.id}`, tag: `reminder-${r.id}`, urgent: true } };
   }
+  if (table === "voice") {
+    const who = await nameOf(r.id);
+    return { kind: "voice", ride: null, exclude: r.id,
+      msg: { title: `🎙️ ${who} فتح غرفة المحادثة الصوتية`, body: "ادخل وسولف مع الشباب الحين", url: "#/voice", tag: "voice-room", urgent: true } };
+  }
   if (table === "join") {
     return { kind: "join", ride: null, exclude: r.id, user: null,
       msg: { title: "👋 طلب انضمام جديد", body: cut(`${r.display_name ?? "شخص"} يبي ينضم للقروب${r.bike_type ? " · " + r.bike_type : ""} — اضغط للمراجعة`, 180),
@@ -115,7 +120,7 @@ Deno.serve(async (req) => {
   await Promise.all((subs ?? []).map(async (s: any) => {
     try {
       await c.app.subscribe({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } })
-        .pushTextMessage(payload, { ttl: ev.kind === "chat" ? 3600 : 6 * 3600, urgency: ev.msg.urgent ? webpush.Urgency.High : webpush.Urgency.Normal });
+        .pushTextMessage(payload, { ttl: ev.kind === "chat" || ev.kind === "voice" ? 3600 : 6 * 3600, urgency: ev.msg.urgent ? webpush.Urgency.High : webpush.Urgency.Normal });
       sent++;
     } catch (e) {
       failed++;

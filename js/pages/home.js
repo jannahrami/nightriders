@@ -1,9 +1,10 @@
 // الصفحة الرئيسية: الطلعة القادمة، جاهز أطلع، الإعلانات، طلبات المساعدة، الاختصارات
 import { h, mount, icon, topbar, chip, loadingView, errorView, emptyView, fmtDate, fmtTime, fmtRemaining, fmtRelative, actionBtn, toast, HELP_KIND, STYLE } from '../ui.js';
-import { state, must, on, myId, member, isReady, isAdmin } from '../core.js';
+import { state, must, on, myId, member, memberName, isReady, isAdmin } from '../core.js';
 import { avatar } from '../media.js';
 import { statusChip, rsvpControl, participationFor } from '../components.js';
 import { notifNudge } from '../push-ui.js';
+import { voiceInfo } from '../voice.js';
 
 export default async function home(root) {
   const nextBox = h('div', null, loadingView());
@@ -13,6 +14,18 @@ export default async function home(root) {
   const helpBox = h('div');
   const joinBox = h('div');
   const me = state.me;
+  const voiceBox = h('a', { class: 'card market-link voice-link', href: '#/voice' });
+  const drawVoice = () => {
+    const vi = voiceInfo();
+    const names = vi.people.filter((p) => !p.me).map((p) => memberName(p.uid));
+    mount(voiceBox, h('span', { class: 'qi' }, icon('mic')),
+      h('div', { class: 'grow', style: { minWidth: 0 } }, h('div', { style: { fontWeight: 700 } }, 'غرفة المحادثة الصوتية'),
+        vi.status === 'in' ? h('div', { class: 'xs live' }, `أنت داخل الغرفة · ${vi.count}`)
+        : vi.count ? h('div', { class: 'xs live' }, `${vi.count} داخل الحين: ${names.slice(0, 3).join('، ')}${names.length > 3 ? '…' : ''}`)
+        : h('div', { class: 'xs muted' }, 'سولف مع الشباب بالصوت — الغرفة فاضية الحين')),
+      icon('fwd'));
+  };
+  drawVoice();
 
   mount(root, topbar({ actions: h('a', { class: 'icon-btn', href: '#/me', 'aria-label': 'حسابي' }, avatar(me, 'sm')) }),
     h('div', { class: 'content stack-lg' },
@@ -29,6 +42,7 @@ export default async function home(root) {
       h('a', { class: 'card market-link', href: '#/market' }, h('span', { class: 'qi' }, icon('tag')),
         h('div', { class: 'grow' }, h('div', { style: { fontWeight: 700 } }, 'السوق'), h('div', { class: 'xs muted' }, 'دباب، قطع، خوذ وملابس للبيع بين الشباب')),
         icon('fwd')),
+      voiceBox,
       meReadyBox,
       readyBox,
       annBox));
@@ -138,5 +152,6 @@ export default async function home(root) {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, loadAnn)
     .subscribe();
   const offs = [on('members', () => { drawReady(); drawJoin(); }), on('help', loadHelp)];
+  offs.push(on('voice', drawVoice));
   return () => { clearInterval(tick); state.sb.removeChannel(ch); offs.forEach((f) => f()); };
 }

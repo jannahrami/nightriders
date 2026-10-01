@@ -80,11 +80,11 @@ export async function detachPush() {
 }
 
 export async function loadPrefs() {
-  const row = await must(state.sb.from('notification_prefs').select('rides,help,chat,ready').eq('user_id', myId()).maybeSingle());
-  return row || { rides: true, help: true, chat: true, ready: true };
+  const row = await must(state.sb.from('notification_prefs').select('rides,help,chat,ready,voice').eq('user_id', myId()).maybeSingle());
+  return row || { rides: true, help: true, chat: true, ready: true, voice: true };
 }
 export async function savePrefs(p) {
-  await must(state.sb.from('notification_prefs').upsert({ user_id: myId(), rides: p.rides, help: p.help, chat: p.chat, ready: p.ready }, { onConflict: 'user_id' }));
+  await must(state.sb.from('notification_prefs').upsert({ user_id: myId(), rides: p.rides, help: p.help, chat: p.chat, ready: p.ready, voice: p.voice !== false }, { onConflict: 'user_id' }));
 }
 
 export const PUSH_ERR = {

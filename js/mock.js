@@ -197,6 +197,7 @@ function rpc(name, a = {}) {
   const ok = (data = null) => Promise.resolve({ data, error: null });
   const P = (id) => db.profiles.find((p) => p.id === id);
   switch (name) {
+    case 'voice_room_opened': return ok(true);
     case 'set_rsvp': {
       let r = db.ride_participants.find((x) => x.ride_id === a.p_ride && x.user_id === ME);
       const old = r && { ...r };
@@ -282,11 +283,33 @@ export function createMockClient() {
       : { data: null, error: { message: 'غير متاح في المعاينة' } }) },
     rpc: (n, a) => rpc(n, a),
     storage,
-    channel(name) {
-      const ch = { name, listeners: [], on(_type, cfg, cb) { this.listeners.push({ cfg, cb }); return this; },
-        subscribe(cb) { channels.add(this); if (cb) setTimeout(() => cb('SUBSCRIBED'), 0); return this; } };
+    channel(name, opts = {}) {
+      // presence/broadcast بين تبويبات المعاينة عبر BroadcastChannel (لتجربة الغرفة الصوتية)
+      const key = opts.config?.presence?.key || Math.random().toString(36).slice(2);
+      const ch = { name, listeners: [], rt: [], pres: new Map(), mine: null, bc: null,
+        on(type, cfg, cb) { if (type === 'presence' || type === 'broadcast') this.rt.push({ type, cfg, cb }); else this.listeners.push({ cfg, cb }); return this; },
+        fire(type, event, arg) { this.rt.filter((l) => l.type === type && l.cfg.event === event).forEach((l) => l.cb(arg)); },
+        presenceState() { const o = {}; this.pres.forEach((m, k) => { o[k] = [m]; }); return o; },
+        track(meta) { this.mine = meta; this.pres.set(key, meta); this.bc?.postMessage({ t: 'p', key, meta }); this.fire('presence', 'sync'); return Promise.resolve('ok'); },
+        untrack() { this.mine = null; this.pres.delete(key); this.bc?.postMessage({ t: 'pl', key }); this.fire('presence', 'sync'); return Promise.resolve('ok'); },
+        send(msg) { this.bc?.postMessage({ t: 'b', event: msg.event, payload: msg.payload }); return Promise.resolve('ok'); },
+        subscribe(cb) {
+          channels.add(this);
+          if (typeof BroadcastChannel !== 'undefined' && this.rt.length) {
+            this.bc = new BroadcastChannel('nr-mock-' + name);
+            this.bc.onmessage = ({ data: d }) => {
+              if (d.t === 'p') { this.pres.set(d.key, d.meta); this.fire('presence', 'sync'); }
+              else if (d.t === 'pl') { this.pres.delete(d.key); this.fire('presence', 'sync'); }
+              else if (d.t === 'hello') { if (this.mine) this.bc.postMessage({ t: 'p', key, meta: this.mine }); }
+              else if (d.t === 'b') this.fire('broadcast', d.event, { payload: d.payload });
+            };
+            this.bc.postMessage({ t: 'hello' });
+            window.addEventListener('pagehide', () => { if (this.mine) this.bc.postMessage({ t: 'pl', key }); });
+          }
+          if (cb) setTimeout(() => cb('SUBSCRIBED'), 0); return this;
+        } };
       return ch;
     },
-    removeChannel(ch) { channels.delete(ch); return Promise.resolve('ok'); },
+    removeChannel(ch) { channels.delete(ch); ch.bc?.close(); return Promise.resolve('ok'); },
   };
 }

@@ -577,3 +577,42 @@ h1, h2, h3 { margin: 0; line-height: 1.3; }
 .rec-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--red); animation: recblink 1s infinite; }
 .rec-time { font-weight: 700; direction: ltr; min-width: 40px; }
 @keyframes recblink { 50% { opacity: .25; } }
+
+/* غرفة المحادثة الصوتية */
+.vc-stage { min-height: 220px; display: grid; place-items: center; }
+.vc-grid { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; }
+@media (max-width: 360px) { .vc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.vc-tile { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; min-width: 0; }
+.vc-av { border-radius: 50%; padding: 4px; border: 3px solid transparent; transition: border-color .15s, box-shadow .15s; }
+.vc-tile.speaking .vc-av { border-color: var(--green); box-shadow: 0 0 0 6px rgba(34,197,94,.18), 0 0 22px rgba(34,197,94,.45); }
+.vc-tile.muted .vc-av { opacity: .65; }
+.vc-name { font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-sub { display: flex; gap: 6px; align-items: center; justify-content: center; min-height: 18px; }
+.vc-sub svg { width: 14px; height: 14px; }
+.vc-sub .red { color: var(--red); }
+.vc-mute { display: inline-flex; gap: 3px; align-items: center; color: var(--red); }
+.vc-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 24px 0; }
+.vc-empty-ic { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; background: var(--blue-bg); color: var(--cyan); }
+.vc-empty-ic svg { width: 40px; height: 40px; }
+.vc-controls { display: flex; justify-content: center; gap: 28px; }
+.vc-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: 0; color: var(--text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.vc-btn svg { width: 64px; height: 64px; padding: 18px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line); box-sizing: border-box; }
+.vc-btn.off svg { background: var(--red); border-color: var(--red); color: #fff; }
+.vc-btn.leave svg { background: var(--red); border-color: var(--red); color: #fff; }
+.vc-btn:active svg { transform: scale(.95); }
+.voice-link .qi { background: rgba(34,197,94,.14); color: var(--green); }
+.voice-link .live { display: inline-flex; align-items: center; gap: 6px; color: var(--green); font-weight: 700; }
+.voice-link .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px rgba(34,197,94,.25); animation: vcpulse 1.4s infinite; }
+@keyframes vcpulse { 50% { opacity: .35; } }
+.voice-pill {
+  position: fixed; z-index: 49; inset-inline: 12px; bottom: calc(var(--nav-h) + var(--safe-b) + 10px);
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 16px;
+  background: rgba(20,60,38,.95); border: 1px solid rgba(34,197,94,.5); color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.45);
+}
+.voice-pill a { color: inherit; flex: 1; display: flex; align-items: center; gap: 8px; font-weight: 700; min-width: 0; }
+.voice-pill a svg { width: 20px; height: 20px; color: var(--green); flex: none; }
+.voice-pill button { width: 40px; height: 40px; border-radius: 50%; border: 0; display: grid; place-items: center; background: rgba(255,255,255,.12); color: #fff; cursor: pointer; flex: none; }
+.voice-pill button svg { width: 20px; height: 20px; }
+.voice-pill button.off, .voice-pill button.leave { background: var(--red); }
+@media (min-width: 900px) { .voice-pill { inset-inline-start: 252px; bottom: 16px; max-width: 520px; } }
+.voice-pill[hidden] { display: none; }
