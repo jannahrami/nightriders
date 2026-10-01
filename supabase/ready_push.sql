@@ -1,6 +1,6 @@
 
 -- ---------------------------------------------------------------------
--- 15) إشعار «جاهز أطلع»: لما عضو يفعّلها (وكان غير مفعّل) — مرة كل 10 دقائق كحد أقصى لكل عضو
+-- 15) إشعار «جاهز أطلع»: لما عضو يفعّلها (وكان غير مفعّل) — مع كل تفعيل جديد (التمديد ما يرسل)
 -- ---------------------------------------------------------------------
 alter table public.notification_prefs add column if not exists ready boolean not null default true;
 grant insert (ready), update (ready) on public.notification_prefs to authenticated;
@@ -31,14 +31,12 @@ grant execute on function public.push_targets(text, uuid, uuid) to service_role;
 
 create or replace function public.ready_notify() returns trigger
 language plpgsql security definer set search_path = '' as $$
-declare v_url text; v_secret text; v_last timestamptz;
+declare v_url text; v_secret text;
 begin
   if new.status <> 'active' or new.ready_until is null or new.ready_until <= now()
      or (old.ready_until is not null and old.ready_until > now()) then
     return new;                                   -- مو تفعيل جديد (تمديد أو إيقاف)
   end if;
-  select at into v_last from private.ready_notify_log where user_id = new.id;
-  if v_last is not null and v_last > now() - interval '10 minutes' then return new; end if;
   insert into private.ready_notify_log (user_id, at) values (new.id, now())
     on conflict (user_id) do update set at = excluded.at;
   select value into v_url from private.app_secrets where key = 'notify_url';
