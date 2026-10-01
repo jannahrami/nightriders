@@ -314,37 +314,38 @@ export function chip(text, cls, ic) { return h('span', { class: 'chip ' + (cls |
 
 /** يجعل العنصر يملأ المساحة المتبقية من الشاشة (يتكيف مع الشريط العلوي ولوحة المفاتيح) */
 export function fitToViewport(el) {
-  // يضبط ارتفاع الصفحة على الجزء الظاهر من الشاشة (مع الكيبورد وبدونه).
-  // iPhone يغيّر المقاسات على مراحل أثناء فتح/قفل الكيبورد، فنعيد القياس بعد كل حدث عدة مرات.
+  // الارتفاع الطبيعي من CSS (100dvh) — ثابت وما يتأثر بقراءات iPhone المتأخرة.
+  // نحدد ارتفاعًا بالـJS فقط والكيبورد مفتوح داخل هذه الصفحة، ونرجع للـCSS أول ما ينقفل.
   const fit = () => {
     const vv = window.visualViewport;
-    const kbOpen = vv && window.innerHeight - vv.height > 120;
-    if (!kbOpen && window.scrollY > 0) window.scrollTo(0, 0);
-    const vh = vv ? vv.height : window.innerHeight;
-    const top = el.getBoundingClientRect().top + (kbOpen ? window.scrollY : 0);
-    el.style.height = Math.max(320, vh - top) + 'px';
+    const a = document.activeElement;
+    const typing = a && el.contains(a) && /^(INPUT|TEXTAREA)$/.test(a.tagName);
+    const kbOpen = typing && vv && window.innerHeight - vv.height > 120;
+    if (!kbOpen) {
+      if (window.scrollY > 0 && !typing) window.scrollTo(0, 0);
+      const top = Math.max(0, Math.round(el.getBoundingClientRect().top + window.scrollY));
+      el.style.height = `max(320px, calc(100dvh - ${top}px))`;   // dvh: ارتفاع الشاشة الفعلي بدون قراءات متأخرة
+      return;
+    }
+    const top = el.getBoundingClientRect().top + window.scrollY - (vv.offsetTop || 0);
+    el.style.height = Math.max(240, vv.height - Math.max(0, top)) + 'px';
   };
   const timers = new Set();
   const schedule = () => {
     fit();
     [80, 250, 500, 900].forEach((ms) => { const t = setTimeout(() => { timers.delete(t); fit(); }, ms); timers.add(t); });
   };
-  requestAnimationFrame(fit);
   schedule();
   window.addEventListener('resize', schedule);
   window.visualViewport?.addEventListener('resize', schedule);
-  window.visualViewport?.addEventListener('scroll', schedule);
   document.addEventListener('focusin', schedule);
   document.addEventListener('focusout', schedule);
-  const obs = new MutationObserver(fit);
-  ['net-banner', 'preview-banner'].forEach((id) => { const b = document.getElementById(id); if (b) obs.observe(b, { attributes: true }); });
   return () => {
     timers.forEach(clearTimeout);
+    el.style.height = '';
     window.removeEventListener('resize', schedule);
     window.visualViewport?.removeEventListener('resize', schedule);
-    window.visualViewport?.removeEventListener('scroll', schedule);
     document.removeEventListener('focusin', schedule);
     document.removeEventListener('focusout', schedule);
-    obs.disconnect();
   };
 }
