@@ -12,10 +12,11 @@ export default async function mapPage(root) {
   const countChip = h('span', { class: 'chip' }, '…');
   const card = sharingCard();
   const sheet = h('div', { class: 'map-sheet stack', style: { gap: '10px' } },
+    h('a', { class: 'btn block', href: '#/places' }, icon('wrench'), 'دليل المحلات: صيانة، قطع، تأجير'),
     h('div', { class: 'row between' }, h('div', { class: 'small muted' }, 'الأعضاء الظاهرون على الخريطة'), countChip),
     card);
   const pageEl = h('div', { class: 'map-page' }, mapEl, sheet);
-  mount(root, topbar({ title: 'الخريطة', actions: h('a', { class: 'btn sm', href: '#/places' }, icon('wrench'), 'المحلات') }), pageEl);
+  mount(root, topbar({ title: 'الخريطة' }), pageEl);
   const unfit = fitToViewport(pageEl);
 
   let L, map;
