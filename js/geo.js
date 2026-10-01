@@ -253,7 +253,7 @@ export async function resolveMapLink(text) {
   if (!state.sb?.functions) return null;
   const { data, error } = await state.sb.functions.invoke('resolve-link', { body: { url } });
   if (error || !data || data.lat == null) return null;
-  return { lat: data.lat, lng: data.lng, label: data.name || null };
+  return { lat: data.lat, lng: data.lng, label: data.name || null, phone: data.phone || null };
 }
 
 /** نافذة اختيار نقطة: حرّك الخريطة حتى يكون العلامة في المكان المطلوب */
@@ -302,10 +302,10 @@ export function pickPoint({ title = 'اختر النقطة على الخريطة
         try {
           const r = await resolveMapLink(v);
           if (!r) { linkNote.hidden = true; err.textContent = 'ما قدرت أقرأ الموقع من هذا الرابط. جرّب تنسخ الرابط من زر «مشاركة» في Google Maps، أو حرّك الخريطة بنفسك.'; err.hidden = false; return; }
-          picked = { lat: r.lat, lng: r.lng, name: r.label || '' };
+          picked = { lat: r.lat, lng: r.lng, name: r.label || '', phone: r.phone || null };
           manual.value = `${r.lat}, ${r.lng}`;
           if (map) map.setView([r.lat, r.lng], 16);
-          linkNote.textContent = r.label ? `✓ ${r.label}` : '✓ تم تحديد المكان من الرابط';
+          linkNote.textContent = (r.label ? `✓ ${r.label}` : '✓ تم تحديد المكان من الرابط') + (r.phone ? ` · ${r.phone}` : '');
         } catch { linkNote.hidden = true; err.textContent = 'تعذّر قراءة الرابط الآن. تأكد من الإنترنت.'; err.hidden = false; }
         finally { resolving = false; }
       }
@@ -332,7 +332,7 @@ export function pickPoint({ title = 'اختر النقطة على الخريطة
         if (manual.value.trim() && !typed) { err.textContent = 'لم أتعرف على الإحداثيات. مثال: 24.7136, 46.6753'; err.hidden = false; return; }
         if (typed) result = typed;
         else if (map) { const c = map.getCenter(); result = { lat: +c.lat.toFixed(6), lng: +c.lng.toFixed(6) }; }
-        if (result && picked && picked.name && Math.abs(picked.lat - result.lat) < 0.002 && Math.abs(picked.lng - result.lng) < 0.002) result.label = picked.name;
+        if (result && picked && picked.name && Math.abs(picked.lat - result.lat) < 0.002 && Math.abs(picked.lng - result.lng) < 0.002) { result.label = picked.name; if (picked.phone) result.phone = picked.phone; }
         if (!result) { err.textContent = 'حدد نقطة أولًا.'; err.hidden = false; return; }
         close();
       };

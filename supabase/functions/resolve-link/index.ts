@@ -42,6 +42,11 @@ function embedPlace(h: string): { lat: number; lng: number; name?: string } | nu
   if (m) { const lat = parseFloat(m[1]), lng = parseFloat(m[2]); if (valid(lat, lng)) return { lat, lng }; }
   return null;
 }
+// رقم الهاتف من صفحة المكان (سعودي: +966 / 05 / 01x / 9200)
+function phoneFrom(h: string): string | null {
+  const m = h.match(/\\?"(\+966[\d\s]{8,13}|0\d{2}[\s-]?\d{3}[\s-]?\d{4}|9200[\s-]?\d{5})\\?"/);
+  return m ? m[1].replace(/[\s-]+/g, " ").trim() : null;
+}
 function nameFrom(u: string): string | null {
   const m = u.match(/\/maps\/place\/([^/@?]+)/);
   if (!m) return null;
@@ -121,7 +126,7 @@ Deno.serve(async (req) => {
           h2 = (await r2.text()).slice(0, 800000); break;
         }
         const c2 = embedPlace(h2);
-        if (c2) return json({ lat: c2.lat, lng: c2.lng, name: c2.name || name || nameFrom(u) });
+        if (c2) return json({ lat: c2.lat, lng: c2.lng, name: c2.name || name || nameFrom(u), phone: phoneFrom(h2) });
         dbg.push({ u: u.slice(0, 160), st2, b: [...h2.matchAll(/.{0,40}\d{1,2}\.\d{5,}.{0,40}/g)].slice(0, 4).map((m) => m[0]) });
       }
     } catch (e) { dbg.push(String(e)); }

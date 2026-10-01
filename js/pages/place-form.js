@@ -35,7 +35,7 @@ export default async function placeForm(root, [a]) {
   drawPt();
   const pickBtn = h('button', { class: 'btn block', type: 'button', onclick: async () => {
     const p = await pickPoint({ title: 'موقع المحل', initial: point || undefined });
-    if (p) { point = { lat: p.lat, lng: p.lng }; if (p.label && !name.value.trim()) name.value = p.label; drawPt(); }
+    if (p) { point = { lat: p.lat, lng: p.lng }; if (p.label && !name.value.trim()) name.value = p.label; if (p.phone && !phone.value.trim()) phone.value = p.phone.replace(/^\+966\s?/, '0').replace(/\s+/g, ''); drawPt(); }
   } }, icon('pin'), 'حدد الموقع على الخريطة');
 
   const err = h('div', { class: 'form-error', hidden: true });
