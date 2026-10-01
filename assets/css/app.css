@@ -386,7 +386,7 @@ h1, h2, h3 { margin: 0; line-height: 1.3; }
 }
 
 /* ---------- map ---------- */
-.map-page { position: relative; height: calc(100dvh - 65px - var(--safe-t)); min-height: 360px; }
+.map-page { position: relative; isolation: isolate; z-index: 0; height: calc(100dvh - 65px - var(--safe-t)); min-height: 360px; }
 .map-page .map { position: absolute; inset: 0; bottom: calc(var(--nav-h) + var(--safe-b)); background: #0b0d14; }
 @media (min-width: 900px) { .map-page .map { bottom: 0; } .map-page { height: calc(100dvh - 65px); } }
 .map-sheet {
