@@ -1,6 +1,6 @@
 // حسابي: ملف البايكر، جاهز أطلع، مشاركة الموقع، التثبيت، لوحة الأدمن، الخروج
 import { h, mount, icon, topbar, chip, STYLE, fmtRemaining, actionBtn, toast, isIOS, isStandalone, confirmDialog } from '../ui.js';
-import { state, must, myId, isAdmin, isOwner, on, isReady } from '../core.js';
+import { state, brand, must, myId, isAdmin, isOwner, on, isReady } from '../core.js';
 import { avatar, privateImg } from '../media.js';
 import { sharing } from '../geo.js';
 import { sharingCard } from '../share-ui.js';
@@ -65,7 +65,7 @@ export default async function profilePage(root) {
         await detachPush();
         await state.sb.auth.signOut();
       } }, icon('logout'), 'تسجيل الخروج'),
-      h('div', { class: 'xs muted', style: { textAlign: 'center' } }, h('span', { class: 'en' }, 'Jeddah Ride v1.0')));
+      h('div', { class: 'xs muted', style: { textAlign: 'center' } }, h('span', { class: 'en' }, `${brand().name} v1.0`)));
   }
   draw();
   const offs = [on('me', draw)];

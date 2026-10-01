@@ -39,12 +39,33 @@ export function configProblem() {
   return null;
 }
 
+/** هوية القروب من config.js: الاسم والمدينة والألوان */
+export const brand = () => state.cfg?.brand || { name: 'Jeddah Ride', wordmark: ['Jeddah ', 'Ride'], city: 'جدة' };
+function applyBrand() {
+  const b = brand();
+  document.title = b.name;
+  document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', b.name);
+  document.querySelectorAll('img.brand-logo').forEach((i) => { i.alt = b.name; });
+  const c = b.colors || {};
+  const hex = (v) => /^#[0-9a-f]{6}$/i.test(v || '') ? v : null;
+  const rgb = (v) => [1, 3, 5].map((i) => parseInt(v.slice(i, i + 2), 16)).join(',');
+  const st = document.documentElement.style;
+  if (hex(c.from) && hex(c.to)) st.setProperty('--accent-grad', `linear-gradient(135deg, ${c.from} 0%, ${c.to} 100%)`);
+  if (hex(c.accent)) {
+    st.setProperty('--accent', c.accent);
+    st.setProperty('--glow', `0 0 0 1px rgba(${rgb(c.accent)},.35), 0 8px 30px -10px rgba(${rgb(c.accent)},.55)`);
+  }
+  if (hex(c.highlight)) st.setProperty('--cyan', c.highlight);
+}
+
 export async function initClient({ preview }) {
   state.preview = preview;
   state.cfg = Object.assign({
     storageBucket: 'nightriders', routingUrl: '', tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     tileAttribution: '&copy; OpenStreetMap contributors', defaultCenter: [21.5433, 39.1728], defaultZoom: 11,
   }, window.NR_CONFIG || {});
+  state.cfg.brand = Object.assign({ name: 'Jeddah Ride', wordmark: ['Jeddah ', 'Ride'], city: 'جدة' }, state.cfg.brand || {});
+  applyBrand();
   if (preview) {
     const { createMockClient } = await import('./mock.js');
     state.sb = createMockClient();

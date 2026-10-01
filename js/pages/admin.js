@@ -1,6 +1,6 @@
 // لوحة الأدمن: طلبات الانضمام، الأعضاء، الدعوات، الإعلانات، الطلعات
 import { h, mount, icon, topbar, chip, loadingView, errorView, emptyView, fmtRelative, fmtDateTime, actionBtn, confirmDialog, toast, openSheet, RIDE_STATUS } from '../ui.js';
-import { state, must, myId, isOwner, loadMembers, member, on } from '../core.js';
+import { state, brand, must, myId, isOwner, loadMembers, member, on } from '../core.js';
 import { personRow } from '../components.js';
 
 export default async function adminPage(root, _p, query) {
@@ -87,11 +87,11 @@ export default async function adminPage(root, _p, query) {
   const inviteLink = (code) => `${location.origin}${location.pathname}#/join?code=${code}`;
   function shareInvite(i) {
     const link = inviteLink(i.code);
-    const text = `دعوة للانضمام لقروب Jeddah Ride 🏍️\nالكود: ${i.code}\nالرابط: ${link}\nصالحة حتى ${fmtDateTime(i.expires_at)}`;
+    const text = `دعوة للانضمام لقروب ${brand().name} 🏍️\nالكود: ${i.code}\nالرابط: ${link}\nصالحة حتى ${fmtDateTime(i.expires_at)}`;
     openSheet('مشاركة الدعوة', (close) => h('div', { class: 'stack' },
       h('div', { class: 'code-display' }, i.code),
       h('div', { class: 'xs muted', style: { wordBreak: 'break-all', direction: 'ltr' } }, link),
-      navigator.share ? h('button', { class: 'btn primary block', onclick: () => navigator.share({ title: 'Jeddah Ride', text }).catch(() => {}) }, icon('share'), 'مشاركة') : null,
+      navigator.share ? h('button', { class: 'btn primary block', onclick: () => navigator.share({ title: brand().name, text }).catch(() => {}) }, icon('share'), 'مشاركة') : null,
       h('button', { class: 'btn block', onclick: async () => {
         try { await navigator.clipboard.writeText(text); toast('تم النسخ', 'ok', 1500); } catch { toast('تعذّر النسخ — انسخ الكود يدويًا', 'err'); }
       } }, icon('copy'), 'نسخ نص الدعوة'),

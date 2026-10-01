@@ -1,3 +1,4 @@
+const BRAND = () => window.NR_CONFIG?.brand || { name: 'Jeddah Ride', wordmark: ['Jeddah ', 'Ride'], city: 'جدة' };
 // أدوات الواجهة: إنشاء العناصر بأمان، الأيقونات، التنبيهات، النوافذ، التنسيق
 export const TZ = 'Asia/Riyadh';
 
@@ -308,7 +309,7 @@ export function topbar({ title, back, actions } = {}) {
   return h('header', { class: 'topbar' },
     back ? h('button', { class: 'icon-btn', 'aria-label': 'رجوع', onclick: () => (history.length > 1 ? history.back() : (location.hash = back)) }, icon('back')) : null,
     title ? h('h1', { class: 'title' }, title)
-          : h('div', { class: 'logo' }, h('div', { class: 'brand-mark', 'aria-hidden': 'true' }), h('div', { class: 'brand-word' }, 'Jeddah ', h('b', null, 'Ride'))),
+          : h('div', { class: 'logo' }, h('div', { class: 'brand-mark', 'aria-hidden': 'true' }), h('div', { class: 'brand-word' }, BRAND().wordmark?.[0] || '', h('b', null, BRAND().wordmark?.[1] || ''))),
     actions || null);
 }
 

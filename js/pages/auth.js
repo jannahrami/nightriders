@@ -1,11 +1,11 @@
 // شاشات ما قبل الدخول: الإعداد، الدخول/التسجيل بالدعوة، الانتظار، الإيقاف
 import { h, mount, icon, errMsg, openSheet, toast } from '../ui.js';
-import { state, must } from '../core.js';
+import { state, brand as brandCfg, must } from '../core.js';
 import { pushStatus, enablePush, detachPush, PUSH_ERR } from '../push.js';
 
 const JOIN_KEY = 'nr.pendingJoin';
 const brand = (sub) => h('div', { class: 'auth-head' },
-  h('img', { class: 'brand-logo', src: 'assets/img/logo-full.png', alt: 'Jeddah Ride' }),
+  h('img', { class: 'brand-logo', src: 'assets/img/logo-full.png', alt: brandCfg().name }),
   sub ? h('p', null, sub) : null);
 
 export function centerCard(title, text, ...actions) {

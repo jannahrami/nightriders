@@ -304,3 +304,26 @@ PGHOST=localhost PGUSER=postgres ./tests/run_tests.sh
 - عند فتح الغرفة وهي فاضية تُستدعى `voice_room_opened()`، فيوصل إشعار للأعضاء. الحد مرة كل 5 دقائق لنفس الشخص.
 - الصوت ينقطع إذا قُفلت الشاشة أو صار التطبيق في الخلفية، وهذا قيد من iOS على تطبيقات الويب.
 - على بيانات الجوال قد يفشل الاتصال بين بعض الأجهزة بدون خادم TURN. يمكن إضافة خوادم في `config.js` عبر `iceServers: [...]`.
+
+## تجهيز نسخة لقروب جديد
+
+هوية القروب كلها في قسم `brand` داخل `config.js` (الاسم، الاسم في الشريط العلوي، المدينة، الألوان)، والتطبيق يقرأها وقت التشغيل.
+الأشياء الثابتة (اسم التطبيق عند التثبيت، الأيقونات، اللوقو) يحدّثها أمر واحد:
+
+```bash
+python3 tools/brand.py --name "Riyadh Riders" --word1 "Riyadh " --word2 "Riders" \
+  --city "الرياض" --lat 24.7136 --lng 46.6753 \
+  --from "#ff6b2f" --to "#ff2f6b" --accent "#ff5a3d" --highlight "#ffc229" \
+  --logo logo.png
+```
+
+يحدّث: `config.js`، `manifest.webmanifest`، `index.html`، `sw.js`، `assets/img/logo-*.png`، `assets/icons/*.png`. كل الخيارات اختيارية.
+
+باقي خطوات العميل الجديد:
+
+1. مشروع Supabase جديد، وتشغيل `supabase/schema.sql` كاملًا.
+2. مفاتيح إشعارات (VAPID) جديدة: الخاص في `private.app_secrets`، والعام في `pushPublicKey`.
+3. رفع الدالتين `notify` و `resolve-link`، وضبط `notify_url` و `notify_secret` و `contact` في `private.app_secrets`.
+4. `supabaseUrl` و `supabaseAnonKey` في `config.js`.
+5. مستودع GitHub جديد وتفعيل Pages، وإضافة رابطه في Supabase ← Authentication ← URL Configuration.
+6. الأدمن يسجّل، ثم يُعيَّن أدمن أساسي.

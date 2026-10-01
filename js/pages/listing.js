@@ -1,6 +1,6 @@
 // تفاصيل إعلان في السوق
 import { h, mount, icon, topbar, chip, loadingView, errorView, emptyView, fmtRelative, fmtDateShort, confirmDialog, toast, errMsg, actionBtn, MARKET_CAT, CONDITION, fmtPrice } from '../ui.js';
-import { state, must, myId, isAdmin, member, memberName } from '../core.js';
+import { state, brand, must, myId, isAdmin, member, memberName } from '../core.js';
 import { avatar, signedUrl, removeFiles } from '../media.js';
 
 export default async function listingPage(root, [id]) {
@@ -42,7 +42,7 @@ export default async function listingPage(root, [id]) {
     // التواصل
     const phone = contact?.phone;
     const wa = phone ? phone.replace(/[^\d]/g, '').replace(/^0/, '966') : null;
-    const waText = encodeURIComponent(`السلام عليكم، بخصوص إعلانك في Jeddah Ride: ${r.title}`);
+    const waText = encodeURIComponent(`السلام عليكم، بخصوص إعلانك في ${brand().name}: ${r.title}`);
     const contactCard = own ? null : h('div', { class: 'card stack' },
       h('a', { class: 'row', href: `#/member/${r.user_id}`, style: { color: 'inherit' } }, avatar(seller),
         h('div', { class: 'grow' }, h('div', { style: { fontWeight: 700 } }, memberName(r.user_id)), h('div', { class: 'xs muted' }, 'البائع — اضغط لعرض ملفه'))),

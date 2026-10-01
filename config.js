@@ -5,6 +5,14 @@
 //  لأن الحماية الفعلية في سياسات RLS داخل قاعدة البيانات.
 // ===============================================================
 window.NR_CONFIG = {
+  // ---------- هوية القروب (كل ما يخص الاسم والألوان والمدينة في مكان واحد) ----------
+  // لتجهيز نسخة لقروب جديد شغّل: python3 tools/brand.py  (يحدّث هذا القسم + الأيقونات + manifest + index.html)
+  brand: {
+    name: 'Jeddah Ride',            // الاسم الكامل (يظهر في العنوان والدعوات والرسائل)
+    wordmark: ['Jeddah ', 'Ride'],  // الاسم في الشريط العلوي: الجزء الثاني يأخذ لون القروب
+    city: 'جدة',                    // المدينة الافتراضية (خانات المدينة)
+    colors: { from: '#2f6bff', to: '#7a4dff', accent: '#4f7dff', highlight: '#29d3ff' },
+  },
   supabaseUrl: 'https://wmhjrtwryuyguracnibf.supabase.co',
   supabaseAnonKey: 'sb_publishable_O6YS8i0sYLjS5RkUx8MiAQ_BvZMgWCt',
 

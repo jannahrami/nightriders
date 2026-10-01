@@ -13,7 +13,7 @@ export default async function profileEdit(root) {
   const me = state.me;
   const field = (label, el, hint) => h('div', { class: 'field' }, h('label', null, label), el, hint ? h('div', { class: 'hint' }, hint) : null);
   const name = h('input', { class: 'input', maxlength: 40, value: me.display_name });
-  const city = h('input', { class: 'input', maxlength: 40, value: me.city || '', placeholder: 'الرياض' });
+  const city = h('input', { class: 'input', maxlength: 40, value: me.city || '', placeholder: brand().city });
   const bikeType = h('input', { class: 'input', maxlength: 40, value: me.bike_type || '', placeholder: 'مثال: Harley-Davidson' });
   const bikeModel = h('input', { class: 'input', maxlength: 40, value: me.bike_model || '', placeholder: 'مثال: Street Glide 2022' });
   let style = me.riding_style || null;

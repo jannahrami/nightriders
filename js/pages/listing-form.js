@@ -1,6 +1,6 @@
 // إضافة / تعديل إعلان في السوق
 import { h, mount, icon, topbar, loadingView, errorView, emptyView, toast, errMsg, MARKET_CAT, CONDITION } from '../ui.js';
-import { state, must, myId } from '../core.js';
+import { state, brand, must, myId } from '../core.js';
 import { compressImage, uploadToMyFolder, removeFiles, signedUrl, IMAGE_INPUT } from '../media.js';
 
 const MAX_PHOTOS = 5;
@@ -19,7 +19,7 @@ export default async function listingForm(root, [id]) {
   const field = (label, el, hint) => h('div', { class: 'field' }, h('label', null, label), el, hint ? h('div', { class: 'hint' }, hint) : null);
   const title = h('input', { class: 'input', maxlength: 80, value: r?.title || '', placeholder: 'مثال: هارلي ستريت قلايد 2019' });
   const price = h('input', { class: 'input', type: 'text', inputmode: 'numeric', dir: 'ltr', maxlength: 9, value: r?.price ?? '', placeholder: 'اتركه فاضي = على السوم' });
-  const city = h('input', { class: 'input', maxlength: 40, value: r?.city ?? state.me?.city ?? '', placeholder: 'جدة' });
+  const city = h('input', { class: 'input', maxlength: 40, value: r?.city ?? state.me?.city ?? '', placeholder: brand().city });
   const desc = h('textarea', { class: 'textarea', maxlength: 2000, placeholder: 'الموديل، الممشى، الحالة، الإضافات، سبب البيع…' }, r?.description || '');
 
   let cat = r?.category || null, cond = r?.condition || null;
