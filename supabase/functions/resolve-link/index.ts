@@ -40,9 +40,6 @@ function embedPlace(h: string): { lat: number; lng: number; name?: string } | nu
   if (m) { const lat = parseFloat(m[1]), lng = parseFloat(m[2]); if (valid(lat, lng)) return { lat, lng, name: m[3].trim() }; }
   m = h.match(/\\?"\s*,\s*\[(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})\]/);
   if (m) { const lat = parseFloat(m[1]), lng = parseFloat(m[2]); if (valid(lat, lng)) return { lat, lng }; }
-  // مركز العرض [[[مقياس,LNG,LAT]
-  m = h.match(/\[\[\[[\d.]+,(-?\d{1,3}\.\d{4,}),(-?\d{1,2}\.\d{4,})\]/);
-  if (m) { const lng = parseFloat(m[1]), lat = parseFloat(m[2]); if (valid(lat, lng)) return { lat, lng }; }
   return null;
 }
 function nameFrom(u: string): string | null {
@@ -96,16 +93,39 @@ Deno.serve(async (req) => {
     name = name ?? nameFrom(html.match(/https:\/\/www\.google\.[^"' ]+\/maps\/place\/[^"' ]+/)?.[0] ?? "");
     if (!name) { const og = html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]+)"/i); if (og) name = og[1].split(" · ")[0].slice(0, 80); }
     if (inPage) return json({ ...inPage, name });
-    // محاولة ثانية: نسخة التضمين (embed) لنفس الرابط تحتوي غالبًا موقع المكان
+    // محاولة ثانية: نسخة التضمين (embed) — بالرابط نفسه، ثم بمعرّف المكان (cid) إن وُجد
+    const dbg: unknown[] = [];
     try {
-      const q = new URL(cur).searchParams.get("q");
+      const fu = new URL(cur);
+      const q = fu.searchParams.get("q");
       if (!name && q) name = q.split(/[,،]/)[0].trim().slice(0, 80) || null;
-      const emb = new URL(cur); emb.searchParams.set("output", "embed"); emb.searchParams.set("hl", "ar");
-      const r2 = await fetch(emb.toString(), { headers: { "User-Agent": "Mozilla/5.0", "Accept-Language": "ar,en" } });
-      const h2 = (await r2.text()).slice(0, 800000);
-      const c2 = embedPlace(h2);
-      if (c2) return json({ lat: c2.lat, lng: c2.lng, name: c2.name || name });
-    } catch { /* */ }
+      const cands: string[] = [];
+      const emb = new URL(cur); emb.searchParams.set("output", "embed"); emb.searchParams.set("hl", "ar"); cands.push(emb.toString());
+      const ftid = fu.searchParams.get("ftid") ?? (cur.match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1] ?? null);
+      if (ftid && /^0x[0-9a-f]+:0x[0-9a-f]+$/i.test(ftid)) {
+        const cid = BigInt(ftid.split(":")[1]).toString();
+        cands.push(`https://maps.google.com/maps?cid=${cid}&output=embed&hl=ar`);
+        cands.push(`https://www.google.com/maps?cid=${cid}&hl=ar`);
+      }
+      for (const c of cands) {
+        let u = c, h2 = "", st2 = 0;
+        for (let k = 0; k < 4; k++) {
+          const r2 = await fetch(u, { redirect: "manual", headers: { "User-Agent": "Mozilla/5.0", "Accept-Language": "ar,en" } });
+          st2 = r2.status;
+          const l2 = r2.headers.get("location");
+          if (st2 >= 300 && st2 < 400 && l2) {
+            const nx = new URL(l2, u); if (!okHost(nx)) break; u = nx.toString();
+            const d = fromText(u); if (d) return json({ ...d, name: name ?? nameFrom(u) });
+            continue;
+          }
+          h2 = (await r2.text()).slice(0, 800000); break;
+        }
+        const c2 = embedPlace(h2);
+        if (c2) return json({ lat: c2.lat, lng: c2.lng, name: c2.name || name || nameFrom(u) });
+        dbg.push({ u: u.slice(0, 160), st2, b: [...h2.matchAll(/.{0,40}\d{1,2}\.\d{5,}.{0,40}/g)].slice(0, 4).map((m) => m[0]) });
+      }
+    } catch (e) { dbg.push(String(e)); }
+    if (req.headers.get("x-nr-secret")) return json({ error: "no_coords", final: cur, dbg }, 404);
     return json({ error: "no_coords", name }, 404);
   }
   return json({ error: "too_many_redirects" }, 508);
