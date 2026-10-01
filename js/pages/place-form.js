@@ -17,8 +17,11 @@ export default async function placeForm(root, [a]) {
   }
 
   const field = (label, el, hint) => h('div', { class: 'field' }, h('label', null, label), el, hint ? h('div', { class: 'hint' }, hint) : null);
-  let cat = r?.category || (PLACE_CAT[a] ? a : 'repair');
+  let cat = (editing && r?.category) || (PLACE_CAT[a] ? a : 'repair');
   let point = r ? { lat: r.lat, lng: r.lng } : null;
+  let pre = null;
+  if (!editing) { try { pre = JSON.parse(sessionStorage.getItem('nr_place_prefill') || 'null'); } catch { /* */ } sessionStorage.removeItem('nr_place_prefill'); }
+  if (pre) { point = { lat: pre.lat, lng: pre.lng }; r = { name: pre.name, phone: pre.phone, hours: pre.hours }; }
   const catRow = h('div', { class: 'picker-row' });
   const drawCats = () => catRow.replaceChildren(...Object.entries(PLACE_CAT).map(([k, t]) =>
     h('button', { type: 'button', class: 'pick' + (cat === k ? ' on' : ''), onclick: () => { cat = k; drawCats(); } }, t)));
