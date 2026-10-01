@@ -30,7 +30,7 @@ create table if not exists public.profiles (
   bike_type       text check (char_length(bike_type) <= 40),
   bike_model      text check (char_length(bike_model) <= 40),
   bike_photo_path text,
-  riding_style    text check (riding_style in ('calm','touring','long_distance')),
+  riding_style    text check (riding_style in ('calm','touring','long_distance','sport','offroad')),
   ready_until     timestamptz,
   role            text not null default 'member' check (role in ('member','admin','owner')),
   status          text not null default 'pending' check (status in ('pending','active','suspended')),
@@ -1232,3 +1232,10 @@ drop trigger if exists help_notify on public.help_requests;
 create trigger help_notify after insert on public.help_requests for each row execute function public.notify_push();
 drop trigger if exists messages_notify on public.messages;
 create trigger messages_notify after insert on public.messages for each row execute function public.notify_push();
+
+-- ---------------------------------------------------------------------
+-- 13) أسلوب الطلعة (اختياري) — نفس قيم أسلوب الركوب في الملف الشخصي
+-- ---------------------------------------------------------------------
+alter table public.rides add column if not exists ride_style text
+  check (ride_style in ('calm','touring','long_distance','sport','offroad'));
+grant insert (ride_style), update (ride_style) on public.rides to authenticated;

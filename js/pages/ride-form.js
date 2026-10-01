@@ -1,5 +1,5 @@
 // إنشاء وتعديل طلعة
-import { h, mount, icon, topbar, loadingView, errorView, emptyView, toast, errMsg, toRiyadhInput, fromRiyadhInput, STOP_KIND, fmtKm, dayKey } from '../ui.js';
+import { h, mount, icon, topbar, loadingView, errorView, emptyView, toast, errMsg, toRiyadhInput, fromRiyadhInput, STOP_KIND, fmtKm, dayKey, STYLE } from '../ui.js';
 import { state, must, myId, isAdmin } from '../core.js';
 import { pickPoint, computeRoute } from '../geo.js';
 
@@ -22,6 +22,11 @@ export default async function rideForm(root, params) {
 
   const v = (x) => x ?? '';
   const title = h('input', { class: 'input', maxlength: 80, value: v(ride?.title), placeholder: 'مثال: طلعة الثمامة الليلية' });
+  let rideStyle = ride?.ride_style || null;
+  const styleRow = h('div', { class: 'picker-row' });
+  const drawStyle = () => styleRow.replaceChildren(...Object.entries(STYLE).map(([k, t]) =>
+    h('button', { type: 'button', class: 'pick' + (rideStyle === k ? ' on' : ''), onclick: () => { rideStyle = rideStyle === k ? null : k; drawStyle(); } }, t)));
+  drawStyle();
   const desc = h('textarea', { class: 'textarea', maxlength: 2000, placeholder: 'تفاصيل، السرعة المتوقعة، ملاحظات…' }, v(ride?.description));
   const defMeet = `${dayKey(Date.now() + 864e5)}T21:00`; // غدًا 9 مساءً بتوقيت السعودية
   const meetAt = h('input', { class: 'input', type: 'datetime-local', value: ride ? toRiyadhInput(ride.meet_at) : defMeet });
@@ -83,6 +88,7 @@ export default async function rideForm(root, params) {
   const save = h('button', { class: 'btn primary block lg', type: 'submit' }, id ? 'حفظ التعديلات' : 'نشر الطلعة');
   const form = h('form', { class: 'stack-lg', novalidate: true },
     h('div', { class: 'field' }, h('label', null, 'اسم الطلعة *'), title),
+    h('div', { class: 'field' }, h('label', null, 'أسلوب الطلعة'), styleRow, h('div', { class: 'hint' }, 'اختياري — يساعد الشباب يعرفون إذا الطلعة تناسبهم.')),
     h('div', { class: 'field' }, h('label', null, 'الوصف'), desc),
     organizerSel ? h('div', { class: 'field' }, h('label', null, 'المنظّم'), organizerSel) : h('div', { class: 'xs muted' }, 'أنت منظّم هذه الطلعة.'),
     h('div', { class: 'card stack' },
@@ -123,7 +129,7 @@ export default async function rideForm(root, params) {
       }
       save.textContent = 'جارٍ الحفظ…';
       const payload = {
-        title: title.value.trim(), description: desc.value.trim() || null,
+        title: title.value.trim(), description: desc.value.trim() || null, ride_style: rideStyle,
         meet_at: meetIso, depart_at: depIso, return_at: retIso,
         meet_name: meet.name.value.trim(), meet_lat: meet.st.lat ?? null, meet_lng: meet.st.lng ?? null,
         dest_name: dest.name.value.trim() || null, dest_lat: dest.st.lat ?? null, dest_lng: dest.st.lng ?? null,

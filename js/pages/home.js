@@ -1,5 +1,5 @@
 // الصفحة الرئيسية: الطلعة القادمة، جاهز أطلع، الإعلانات، طلبات المساعدة، الاختصارات
-import { h, mount, icon, topbar, chip, loadingView, errorView, emptyView, fmtDate, fmtTime, fmtRemaining, fmtRelative, actionBtn, toast, HELP_KIND } from '../ui.js';
+import { h, mount, icon, topbar, chip, loadingView, errorView, emptyView, fmtDate, fmtTime, fmtRemaining, fmtRelative, actionBtn, toast, HELP_KIND, STYLE } from '../ui.js';
 import { state, must, on, myId, member, isReady, isAdmin } from '../core.js';
 import { avatar } from '../media.js';
 import { statusChip, rsvpControl, participationFor } from '../components.js';
@@ -48,7 +48,7 @@ export default async function home(root) {
       const part = (await participationFor([ride.id])).get(ride.id);
       const going = await must(state.sb.from('ride_participants').select('user_id').eq('ride_id', ride.id).eq('rsvp', 'going'));
       mount(nextBox, h('div', { class: 'card hero stack' },
-        h('div', { class: 'row between' }, h('span', { class: 'eyebrow' }, ride.status === 'ongoing' ? 'الطلعة الجارية' : 'الطلعة القادمة'), statusChip(ride.status)),
+        h('div', { class: 'row between' }, h('span', { class: 'eyebrow' }, ride.status === 'ongoing' ? 'الطلعة الجارية' : 'الطلعة القادمة'), h('div', { class: 'row', style: { gap: '6px' } }, ride.ride_style ? chip(STYLE[ride.ride_style], 'violet') : null, statusChip(ride.status))),
         h('a', { href: `#/ride/${ride.id}`, style: { color: 'inherit' } }, h('div', { class: 'h2' }, ride.title)),
         h('div', { class: 'row', style: { alignItems: 'flex-end', gap: '14px' } },
           h('div', { class: 'big-time' }, fmtTime(ride.meet_at)),

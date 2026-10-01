@@ -61,7 +61,7 @@ const db = {
 // طلعات تجريبية
 const R1 = uid(), R2 = uid(), R3 = uid();
 db.rides.push(
-  { id: R1, title: 'طلعة الثمامة الليلية', description: 'سرعة هادية، نتجمع ونطلع سوا. لا تنسى الخوذة والسترة العاكسة.', status: 'planned', organizer_id: ME, created_by: ME,
+  { id: R1, title: 'طلعة الثمامة الليلية', description: 'سرعة هادية، نتجمع ونطلع سوا. لا تنسى الخوذة والسترة العاكسة.', status: 'planned', ride_style: 'calm', organizer_id: ME, created_by: ME,
     meet_at: riyadh(1, 21, 0), depart_at: riyadh(1, 21, 30), return_at: riyadh(2, 0, 30), meet_name: 'محطة الدريس — طريق الملك فهد', meet_lat: 24.7743, meet_lng: 46.6385,
     dest_name: 'منتزه الثمامة', dest_lat: 25.0100, dest_lng: 46.6600, distance_km: null, route_geojson: null, leader_id: U(2), sweep_id: U(3), created_at: iso(-2 * D) },
   { id: R2, title: 'فطور الخرج', description: 'طلعة صباحية للخرج وفطور.', status: 'planned', organizer_id: U(2), created_by: U(2),

@@ -1,6 +1,6 @@
 // تفاصيل الطلعة: المواعيد، النقاط، الخريطة، المشاركة، متابعة الحالة، التصويت
 import { h, mount, icon, topbar, chip, loadingView, errorView, emptyView, fmtDate, fmtTime, fmtRelative, fmtKm, openInMaps,
-  actionBtn, confirmDialog, toast, PROGRESS, STOP_KIND, errMsg } from '../ui.js';
+  actionBtn, confirmDialog, toast, PROGRESS, STOP_KIND, errMsg, STYLE } from '../ui.js';
 import { state, must, myId, member, isAdmin, liveHint } from '../core.js';
 import { removeFiles } from '../media.js';
 import { makeMap, mapFallback, pinIcon } from '../geo.js';
@@ -103,7 +103,7 @@ export default async function ridePage(root, [id]) {
 
     mount(body,
       h('div', { class: 'stack' },
-        h('div', { class: 'row between' }, statusChip(ride.status), liveHint()),
+        h('div', { class: 'row between' }, h('div', { class: 'row', style: { gap: '6px' } }, statusChip(ride.status), ride.ride_style ? chip(STYLE[ride.ride_style], 'violet', 'bike') : null), liveHint()),
         h('h2', { class: 'h1' }, ride.title),
         h('div', { class: 'small muted' }, 'المنظّم: ', h('a', { href: `#/member/${ride.organizer_id}` }, member(ride.organizer_id)?.display_name || '—')),
         ride.description ? h('p', { style: { margin: 0, whiteSpace: 'pre-wrap', color: 'var(--text-2)' } }, ride.description) : null),

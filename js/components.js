@@ -1,5 +1,5 @@
 // مكوّنات مشتركة: بطاقة الطلعة، أزرار المشاركة، التصويت، صف العضو
-import { h, icon, chip, fmtDate, fmtTime, fmtRelative, RIDE_STATUS, RSVP, actionBtn, confirmDialog, toast, openSheet, fromRiyadhInput, errMsg } from './ui.js';
+import { h, icon, chip, fmtDate, fmtTime, fmtRelative, RIDE_STATUS, RSVP, actionBtn, confirmDialog, toast, openSheet, fromRiyadhInput, errMsg, STYLE } from './ui.js';
 import { state, must, myId, member, isAdmin } from './core.js';
 import { avatar } from './media.js';
 
@@ -15,7 +15,8 @@ export function rideCard(ride, { going = 0, mine } = {}) {
     h('div', { class: 'meta' },
       h('span', null, icon('pin'), ride.meet_name),
       ride.dest_name ? h('span', null, icon('flag'), ride.dest_name) : null,
-      h('span', null, icon('users'), `${going} مشارك`)),
+      h('span', null, icon('users'), `${going} مشارك`),
+      ride.ride_style ? h('span', null, icon('bike'), STYLE[ride.ride_style]) : null),
     mine ? h('div', null, chip(`أنت: ${RSVP[mine]}`, mine === 'going' ? 'green' : mine === 'maybe' ? 'amber' : 'red')) : null);
 }
 

@@ -270,7 +270,8 @@ export const RIDE_STATUS = {
 };
 export const RSVP = { going: 'مشارك', maybe: 'يمكن', declined: 'معتذر' };
 export const PROGRESS = { on_way: 'في الطريق', arrived: 'وصلت التجمع', returned: 'رجعت بالسلامة' };
-export const STYLE = { calm: 'هادي', touring: 'سياحي', long_distance: 'مسافات طويلة' };
+export const STYLE = { calm: 'هادي', touring: 'سياحي', long_distance: 'مسافات طويلة', sport: 'سبورت / سريع', offroad: 'أوف رود / صحراوي' };
+export const STYLE_HINT = { calm: 'سرعة معتدلة ومشاوير خفيفة', touring: 'وقفات واستمتاع بالطريق', long_distance: 'رحلات بعيدة بين المدن', sport: 'سرعات أعلى ومنحنيات', offroad: 'رمل وطرق ترابية' };
 export const HELP_KIND = { flat_tire: 'بنشر', breakdown: 'عطل', fuel: 'نفاد بنزين', other: 'أخرى' };
 export const PLACE_CAT = { repair: 'صيانة', parts: 'قطع غيار', rental: 'تأجير دبابات', fuel: 'محطات', other: 'أخرى' };
 export const MARKET_CAT = { bike: 'دباب', parts: 'قطع', gear: 'خوذ وملابس', accessories: 'إكسسوارات', other: 'أخرى' };
