@@ -13,12 +13,20 @@ export function geoErrorText(err) {
     default: return err?.message || 'تعذّر تحديد الموقع.';
   }
 }
-export function getPosition({ timeout = 15000, maximumAge = 10000 } = {}) {
+export function getPosition({ timeout = 15000, maximumAge = 10000, highAccuracy = true } = {}) {
   return new Promise((resolve, reject) => {
     if (!('geolocation' in navigator) || !window.isSecureContext) { reject(new Error(geoErrorText(null))); return; }
     navigator.geolocation.getCurrentPosition(resolve, (e) => reject(new Error(geoErrorText(e))),
-      { enableHighAccuracy: true, timeout, maximumAge });
+      { enableHighAccuracy: highAccuracy, timeout, maximumAge });
   });
+}
+/** موقع تقريبي سريع (للترتيب حسب القرب): يقبل قراءة حديثة، ولو تأخر الـGPS يرجع لموقع الشبكة */
+export async function getApproxPosition() {
+  try { return await getPosition({ timeout: 8000, maximumAge: 5 * 60000, highAccuracy: false }); }
+  catch (e) {
+    if (/رفض|HTTPS|لا يدعم/.test(e.message)) throw e;
+    return getPosition({ timeout: 20000, maximumAge: 10 * 60000, highAccuracy: true });
+  }
 }
 
 // ---------- مشاركة الموقع (متوقفة افتراضيًا) ----------

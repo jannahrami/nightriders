@@ -1,7 +1,7 @@
 // دليل المحلات: صيانة، قطع غيار، تأجير دبابات، محطات — مرتبة من الأقرب
 import { h, mount, icon, topbar, loadingView, errorView, emptyView, openSheet, openInMaps, confirmDialog, toast, errMsg, actionBtn, PLACE_CAT } from '../ui.js';
 import { state, must, myId, isAdmin, memberName } from '../core.js';
-import { makeMap, mapFallback, pinIcon, getPosition, geoErrorText } from '../geo.js';
+import { makeMap, mapFallback, pinIcon, getApproxPosition } from '../geo.js';
 
 const COLORS = { repair: '#ff8a3d', parts: '#4f7dff', rental: '#a26bff', fuel: '#22c55e', other: '#8b93a8' };
 const LETTER = { repair: 'ص', parts: 'ق', rental: 'ت', fuel: 'م', other: '•' };
@@ -20,17 +20,23 @@ const OSM_Q = {
   rental: ['nwr["amenity"="motorcycle_rental"]', 'nwr["shop"="motorcycle_rental"]'],
 };
 const osmCache = new Map();
+const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
 async function fetchOsm(cat, c, radiusM = 8000) {
   if (!OSM_Q[cat]) return [];
   const key = `${cat}:${c.lat.toFixed(2)}:${c.lng.toFixed(2)}`;
   if (osmCache.has(key)) return osmCache.get(key);
-  const body = `[out:json][timeout:20];(${OSM_Q[cat].map((q) => `${q}(around:${radiusM},${c.lat},${c.lng});`).join('')});out center 60;`;
-  const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 20000);
-  try {
-    const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: 'data=' + encodeURIComponent(body),
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: ctrl.signal });
-    if (!r.ok) throw new Error('osm_failed');
-    const j = await r.json();
+  const body = `[out:json][timeout:15];(${OSM_Q[cat].map((q) => `${q}(around:${radiusM},${c.lat},${c.lng});`).join('')});out center 60;`;
+  let j = null, lastErr = null;
+  for (const ep of OVERPASS) {           // نجرب أكثر من خادم لأن الخوادم العامة تزدحم أحيانًا
+    const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 15000);
+    try {
+      const r = await fetch(`${ep}?data=${encodeURIComponent(body)}`, { signal: ctrl.signal });
+      if (!r.ok) throw new Error('osm_' + r.status);
+      j = await r.json(); break;
+    } catch (e) { lastErr = e; } finally { clearTimeout(t); }
+  }
+  if (!j) throw lastErr || new Error('osm_failed');
+  {
     const out = j.elements.map((e) => {
       const lat = e.lat ?? e.center?.lat, lng = e.lon ?? e.center?.lon, tg = e.tags || {};
       const name = tg['name:ar'] || tg.name || tg.brand || (cat === 'fuel' ? 'محطة بنزين' : 'محل دبابات');
@@ -39,14 +45,14 @@ async function fetchOsm(cat, c, radiusM = 8000) {
     }).filter(Boolean);
     osmCache.set(key, out);
     return out;
-  } finally { clearTimeout(t); }
+  }
 }
 
 const fmtDist = (km) => (km < 1 ? `${Math.round(km * 1000)} م` : `${km.toFixed(km < 10 ? 1 : 0)} كم`);
 
 export default async function placesPage(root, [catParam]) {
   let cat = PLACE_CAT[catParam] ? catParam : 'repair';
-  let rows = [], me = null, osm = [], osmState = '';
+  let rows = [], me = null, osm = [], osmState = '', osmErr = '';
   const mapEl = h('div', { class: 'mini-map places-map' });
   const catRow = h('div', { class: 'picker-row scroll-x' });
   const list = h('div', { class: 'stack', style: { gap: '8px' } }, loadingView());
@@ -79,14 +85,14 @@ export default async function placesPage(root, [catParam]) {
   }
   async function locate() {
     try {
-      const p = await getPosition({ timeout: 12000 });
+      const p = await getApproxPosition();
       me = { lat: p.coords.latitude, lng: p.coords.longitude };
       if (map) {
         meMarker?.remove();
         meMarker = L.circleMarker([me.lat, me.lng], { radius: 8, color: '#fff', weight: 3, fillColor: '#29d3ff', fillOpacity: 1 }).addTo(map).bindTooltip('أنت');
       }
       drawLoc(); draw(true); loadOsm();
-    } catch (e) { toast(geoErrorText(e) || e.message, 'err', 5000); }
+    } catch (e) { toast(e.message, 'err', 6000); }
   }
 
   let osmSeq = 0;
@@ -95,7 +101,7 @@ export default async function placesPage(root, [catParam]) {
     if (!c || !OSM_Q[cat]) { osm = []; osmState = ''; return; }
     const seq = ++osmSeq; osmState = 'loading'; draw(false);
     try { const res = await fetchOsm(cat, c); if (seq !== osmSeq) return; osm = res; osmState = 'ok'; }
-    catch { if (seq !== osmSeq) return; osm = []; osmState = 'err'; }
+    catch (e) { if (seq !== osmSeq) return; osm = []; osmState = 'err'; osmErr = e?.name === 'AbortError' ? 'timeout' : String(e?.message || e).slice(0, 40); }
     draw(true);
   }
 
@@ -117,7 +123,7 @@ export default async function placesPage(root, [catParam]) {
       }
     }
     const status = osmState === 'loading' ? h('div', { class: 'loading' }, h('div', { class: 'spinner sm' }), 'نجيب الأماكن القريبة من الخريطة العامة…')
-      : osmState === 'err' ? h('div', { class: 'xs muted' }, 'تعذّر جلب الأماكن من الخريطة العامة الآن.') : null;
+      : osmState === 'err' ? h('div', { class: 'xs muted' }, `تعذّر جلب الأماكن من الخريطة العامة الآن (${osmErr}).`, ' ', h('button', { class: 'btn sm', type: 'button', onclick: () => loadOsm() }, 'إعادة المحاولة')) : null;
     if (!shown.length) {
       mount(list, status, osmState === 'loading' ? null : emptyView('pin', `ما فيه ${PLACE_CAT[cat]} قريبة مسجّلة`, 'تعرف محل زين؟ أضفه وخلّ الشباب يستفيدون.'));
       return;
