@@ -7,6 +7,7 @@ export default async function helpPage(root) {
   const list = h('div', { class: 'stack' }, loadingView());
   mount(root, topbar({ title: 'طلبات المساعدة', back: '#/home' }), h('div', { class: 'content stack-lg' },
     h('a', { class: 'sos-btn', href: '#/help/new' }, icon('help'), 'أحتاج مساعدة'),
+    h('a', { class: 'btn block', href: '#/places/repair' }, icon('wrench'), 'أقرب محل صيانة'),
     list));
 
   async function load() {

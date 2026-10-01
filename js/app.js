@@ -28,6 +28,10 @@ const ROUTES = [
   [/^market\/new$/, () => import('./pages/listing-form.js'), 'home'],
   [/^market\/([\w-]+)$/, () => import('./pages/listing.js'), 'home'],
   [/^market\/([\w-]+)\/edit$/, () => import('./pages/listing-form.js'), 'home'],
+  [/^places$/, () => import('./pages/places.js'), 'map'],
+  [/^places\/new(?:\/(\w+))?$/, () => import('./pages/place-form.js'), 'map'],
+  [/^places\/(repair|parts|rental|fuel|other)$/, () => import('./pages/places.js'), 'map'],
+  [/^place\/([\w-]+)\/edit$/, () => import('./pages/place-form.js'), 'map'],
   [/^admin$/, () => import('./pages/admin.js'), 'me'],
 ];
 

@@ -1,5 +1,5 @@
 // خريطة الأعضاء المشاركين لمواقعهم + طلبات المساعدة ذات الموقع
-import { h, mount, topbar, fmtRelative, HELP_KIND, toast, fitToViewport } from '../ui.js';
+import { h, mount, icon, topbar, fmtRelative, HELP_KIND, toast, fitToViewport } from '../ui.js';
 import { state, must, on, member, myId, isDegraded, watchChannel } from '../core.js';
 import { signedUrl, initials } from '../media.js';
 import { makeMap, mapFallback, FRESH_MS, STALE_MS, pinIcon } from '../geo.js';
@@ -12,6 +12,7 @@ export default async function mapPage(root) {
   const countChip = h('span', { class: 'chip' }, '…');
   const card = sharingCard();
   const sheet = h('div', { class: 'map-sheet stack', style: { gap: '10px' } },
+    h('a', { class: 'btn block', href: '#/places' }, icon('wrench'), 'دليل المحلات: صيانة، قطع، تأجير'),
     h('div', { class: 'row between' }, h('div', { class: 'small muted' }, 'الأعضاء الظاهرون على الخريطة'), countChip),
     card);
   const pageEl = h('div', { class: 'map-page' }, mapEl, sheet);

@@ -45,6 +45,12 @@ const db = {
   ],
   help_responders: [],
   ride_media: [],
+  places: [
+    { id: 'pl-1', created_by: U(2), category: 'repair', name: 'ورشة الدبابات — حي الصفا', phone: '0500000002', hours: 'يوميًا 4 العصر – 12 الليل', notes: 'يفهم في الهارلي والـBMW، أسعاره معقولة.', lat: 21.5810, lng: 39.2090, created_at: iso(-9 * D) },
+    { id: 'pl-2', created_by: U(3), category: 'repair', name: 'مركز صيانة الشمال', phone: null, hours: null, notes: 'سريع في تغيير الزيت والكفرات.', lat: 21.6420, lng: 39.1560, created_at: iso(-5 * D) },
+    { id: 'pl-3', created_by: U(2), category: 'parts', name: 'قطع غيار الدبابات — طريق المدينة', phone: '0500000003', hours: '9 الصبح – 11 الليل', notes: null, lat: 21.5480, lng: 39.1880, created_at: iso(-3 * D) },
+    { id: 'pl-4', created_by: U(4), category: 'rental', name: 'تأجير دبابات الكورنيش', phone: '0500000004', hours: 'من العصر', notes: 'بالساعة واليوم، يطلب رخصة.', lat: 21.6000, lng: 39.1080, created_at: iso(-2 * D) },
+  ],
   listings: [
     { id: 'mk-1', user_id: U(2), title: 'BMW R 1250 GS موديل 2021', price: 68000, category: 'bike', condition: 'used', description: 'ممشى 32 ألف، صيانة وكالة، معه شنط جانبية.', city: 'جدة', photos: [], status: 'active', created_at: iso(-3 * H), expires_at: iso(27 * D) },
     { id: 'mk-2', user_id: U(3), title: 'خوذة Shoei مقاس L', price: 1200, category: 'gear', condition: 'used', description: 'استعمال خفيف.', city: 'جدة', photos: [], status: 'active', created_at: iso(-1 * D), expires_at: iso(29 * D) },
@@ -83,7 +89,7 @@ db.poll_votes.push({ poll_id: P1, option_id: O1, user_id: U(2), voted_at: iso(-5
   .forEach(([, u, body, t]) => db.messages.push({ id: uid(), ride_id: null, user_id: u, client_id: uid(), body, image_path: null, created_at: iso(t) }));
 db.messages.push({ id: uid(), ride_id: R1, user_id: U(2), client_id: uid(), body: 'لا تنسون تعبّون بنزين قبل التجمع', image_path: null, created_at: iso(-2 * H) });
 
-const DEFAULT_ME = { messages: 'user_id', help_requests: 'user_id', help_responders: 'user_id', ride_media: 'user_id', listings: 'user_id', announcements: 'created_by' };
+const DEFAULT_ME = { messages: 'user_id', help_requests: 'user_id', help_responders: 'user_id', ride_media: 'user_id', listings: 'user_id', places: 'created_by', announcements: 'created_by' };
 const PK = { profiles: ['id'], member_contacts: ['user_id'], ride_participants: ['ride_id', 'user_id'], poll_votes: ['poll_id', 'user_id'], member_locations: ['user_id'], help_responders: ['request_id', 'user_id'] };
 const pk = (t) => PK[t] || ['id'];
 

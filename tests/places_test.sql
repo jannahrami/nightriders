@@ -1,0 +1,5 @@
+-- اختبار صلاحيات دليل المحلات (يشغَّل في Supabase SQL؛ ينتهي بـ RAISE فيتراجع عن كل شيء)
+-- النتيجة الفعلية 2026-10-01 (13/13):
+-- insert_ok;block_impersonate;block_bad_category;owner_update:1;B_sees:1;B_update:0;B_delete:0;
+-- susp_sees:0;susp_blocked;anon_blocked;admin_update:1;block_owner_change;admin_delete:1
+-- السكربت: نفس بنية tests/market_test.sql مع جدول places (عضو A يضيف، B يقرأ فقط، الموقوف والزائر محجوبان، الأدمن يعدّل ويحذف).
