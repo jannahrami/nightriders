@@ -52,6 +52,12 @@ async function build(table: string, r: any) {
       msg: { title: `🆘 ${who} يحتاج فزعة`, body: cut(`${HELP[r.kind] ?? "مساعدة"}${r.description ? " — " + r.description : ""}`, 180),
         url: "#/help", tag: `help-${r.id}`, urgent: true } };
   }
+  if (table === "ready") {
+    const who = await nameOf(r.id);
+    const until = new Intl.DateTimeFormat("ar-SA-u-ca-gregory-nu-latn", { timeZone: "Asia/Riyadh", hour: "numeric", minute: "2-digit" }).format(new Date(r.ready_until));
+    return { kind: "ready", ride: null, exclude: r.id,
+      msg: { title: `⚡ ${who} جاهز يطلع`, body: `فاضي لين ${until} — تطلع معه؟`, url: "#/home", tag: `ready-${r.id}`, urgent: false } };
+  }
   if (table === "messages") {
     const who = await nameOf(r.user_id);
     let where = "";

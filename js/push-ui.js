@@ -17,7 +17,7 @@ export function notifCard() {
     head.style.justifyContent = 'space-between';
     if (st === 'on') {
       let prefs;
-      try { prefs = await loadPrefs(); } catch { prefs = { rides: true, help: true, chat: true }; }
+      try { prefs = await loadPrefs(); } catch { prefs = { rides: true, help: true, chat: true, ready: true }; }
       const row = (key, label, hint) => {
         const inp = h('input', { type: 'checkbox', checked: !!prefs[key], 'aria-label': label });
         inp.onchange = async () => {
@@ -31,11 +31,12 @@ export function notifCard() {
       mount(body,
         row('rides', 'طلعة جديدة', 'لما أحد ينشر طلعة'),
         row('help', 'طلبات الفزعة', 'لما أحد يحتاج مساعدة'),
+        row('ready', 'جاهز أطلع', 'لما أحد من الشباب يفعّل «جاهز أطلع»'),
         row('chat', 'رسائل الشات', 'الشات العام، وشات الطلعات اللي أنت مشارك فيها'),
         actionBtn('إيقاف الإشعارات على هذا الجهاز', 'ghost block', async () => { await disablePush(); toast('تم الإيقاف', 'ok'); draw(); }));
     } else if (st === 'off') {
       mount(body,
-        h('div', { class: 'small muted' }, 'يوصلك تنبيه على الجوال حتى لو التطبيق مقفول: طلعة جديدة، طلب فزعة، ورسائل الشات.'),
+        h('div', { class: 'small muted' }, 'يوصلك تنبيه على الجوال حتى لو التطبيق مقفول: طلعة جديدة، طلب فزعة، «جاهز أطلع»، ورسائل الشات.'),
         actionBtn('فعّل الإشعارات', 'primary block', async () => {
           try { await enablePush(); toast('تم تفعيل الإشعارات 👍', 'ok'); }
           catch (e) { toast(ERR(e), 'err', 7000); }
@@ -61,7 +62,7 @@ export function notifNudge() {
     mount(wrap, h('div', { class: 'card stack', style: { gap: '10px' } },
       h('div', { class: 'row between' }, h('div', { class: 'row' }, icon('bell'), h('div', { class: 'h3' }, 'خلّك على اطلاع')),
         h('button', { class: 'icon-btn sm', 'aria-label': 'إغلاق', onclick: close }, icon('x'))),
-      h('div', { class: 'small muted' }, st === 'ios_install' ? PUSH_ERR.ios_install : 'فعّل الإشعارات عشان توصلك الطلعات الجديدة وطلبات الفزعة ورسائل الشات.'),
+      h('div', { class: 'small muted' }, st === 'ios_install' ? PUSH_ERR.ios_install : 'فعّل الإشعارات عشان توصلك الطلعات الجديدة وطلبات الفزعة و«جاهز أطلع» ورسائل الشات.'),
       st === 'off' ? actionBtn('فعّل الإشعارات', 'primary block', async () => {
         try { await enablePush(); toast('تم تفعيل الإشعارات 👍', 'ok'); close(); }
         catch (e) { toast(ERR(e), 'err', 7000); }
