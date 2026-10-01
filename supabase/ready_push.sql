@@ -1,6 +1,6 @@
 
 -- ---------------------------------------------------------------------
--- 15) إشعار «جاهز أطلع»: لما عضو يفعّلها (وكان غير مفعّل) — مرة كل 30 دقيقة كحد أقصى لكل عضو
+-- 15) إشعار «جاهز أطلع»: لما عضو يفعّلها (وكان غير مفعّل) — مرة كل 10 دقائق كحد أقصى لكل عضو
 -- ---------------------------------------------------------------------
 alter table public.notification_prefs add column if not exists ready boolean not null default true;
 grant insert (ready), update (ready) on public.notification_prefs to authenticated;
@@ -38,7 +38,7 @@ begin
     return new;                                   -- مو تفعيل جديد (تمديد أو إيقاف)
   end if;
   select at into v_last from private.ready_notify_log where user_id = new.id;
-  if v_last is not null and v_last > now() - interval '30 minutes' then return new; end if;
+  if v_last is not null and v_last > now() - interval '10 minutes' then return new; end if;
   insert into private.ready_notify_log (user_id, at) values (new.id, now())
     on conflict (user_id) do update set at = excluded.at;
   select value into v_url from private.app_secrets where key = 'notify_url';
