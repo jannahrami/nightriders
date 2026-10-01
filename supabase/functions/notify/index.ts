@@ -60,8 +60,9 @@ async function build(table: string, r: any) {
       where = data?.title ? ` · ${data.title}` : "";
     }
     const text = (r.body ?? "").trim();
+    const what = text ? cut(text, 160) : r.audio_path ? "🎤 رسالة صوتية" : "📷 صورة";
     return { kind: "chat", ride: r.ride_id ?? null, exclude: r.user_id,
-      msg: { title: cut(`💬 ${who}${where}`, 80), body: text ? cut(text, 160) : "📷 صورة",
+      msg: { title: cut(`💬 ${who}${where}`, 80), body: r.reply_to ? `↩︎ ${what}` : what,
         url: r.ride_id ? `#/chat/${r.ride_id}` : "#/chat", tag: r.ride_id ? `chat-${r.ride_id}` : "chat-general", urgent: false } };
   }
   return null;
