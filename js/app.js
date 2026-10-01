@@ -53,6 +53,46 @@ function buildShell() {
     link('me', '#/me', 'user', 'حسابي'));
   shell = h('div', { class: 'shell' }, pageRoot, navEl);
   mount(app, shell);
+  pinNav(navEl);
+}
+// iPhone (خصوصًا iOS 26) أحيانًا يترك الشريط السفلي معلّقًا في نص الشاشة بعد ما ينقفل الكيبورد.
+// نقيس مكانه الفعلي ونرجّعه لأسفل الشاشة المرئية.
+let pinCleanup = null;
+function pinNav(nav) {
+  pinCleanup?.();
+  const vv = window.visualViewport;
+  if (!vv) return;
+  let raf = 0, shift = 0;
+  const typing = () => { const a = document.activeElement; return a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName); };
+  const fix = () => {
+    raf = 0;
+    if (!nav.isConnected || window.matchMedia('(min-width: 900px)').matches || typing()) {
+      if (shift) { shift = 0; nav.style.transform = ''; }
+      return;
+    }
+    const bottom = nav.getBoundingClientRect().bottom - shift;      // مكانه بدون التصحيح
+    const want = vv.offsetTop + vv.height;                           // أسفل الجزء الظاهر من الشاشة
+    const d = Math.round(want - bottom);
+    const next = Math.abs(d) > 2 && Math.abs(d) < 600 ? d : 0;
+    if (next !== shift) { shift = next; nav.style.transform = shift ? `translateY(${shift}px)` : ''; }
+  };
+  const schedule = () => { if (!raf) raf = requestAnimationFrame(fix); };
+  const late = () => { schedule(); [100, 300, 600, 1000].forEach((ms) => setTimeout(schedule, ms)); };
+  vv.addEventListener('resize', late);
+  vv.addEventListener('scroll', schedule);
+  window.addEventListener('scroll', schedule, { passive: true });
+  window.addEventListener('resize', late);
+  document.addEventListener('focusout', late);
+  document.addEventListener('focusin', late);
+  document.addEventListener('visibilitychange', late);
+  window.addEventListener('hashchange', late);
+  late();
+  pinCleanup = () => {
+    vv.removeEventListener('resize', late); vv.removeEventListener('scroll', schedule);
+    window.removeEventListener('scroll', schedule); window.removeEventListener('resize', late);
+    document.removeEventListener('focusout', late); document.removeEventListener('focusin', late);
+    document.removeEventListener('visibilitychange', late); window.removeEventListener('hashchange', late);
+  };
 }
 function setNav(key) {
   navEl?.querySelectorAll('a').forEach((a) => a.classList.toggle('active', a.dataset.key === key));
