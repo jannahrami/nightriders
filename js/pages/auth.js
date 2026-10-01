@@ -1,6 +1,7 @@
 // شاشات ما قبل الدخول: الإعداد، الدخول/التسجيل بالدعوة، الانتظار، الإيقاف
 import { h, mount, icon, errMsg, openSheet, toast } from '../ui.js';
 import { state, must } from '../core.js';
+import { pushStatus, enablePush, detachPush, PUSH_ERR } from '../push.js';
 
 const JOIN_KEY = 'nr.pendingJoin';
 const brand = (sub) => h('div', { class: 'auth-head' },
@@ -156,7 +157,9 @@ export function renderJoin(root, { code, onDone }) {
   const bikeIn = h('input', { class: 'input', maxlength: 40, value: saved?.bike || '', placeholder: 'اختياري' });
   const codeIn = h('input', { class: 'input code', maxlength: 10, value: code || saved?.code || '', autocapitalize: 'characters', placeholder: 'اختياري' });
   const err = h('div', { class: 'form-error', hidden: true });
-  const btn = h('button', { class: 'btn primary block lg', type: 'submit' }, 'ادخل');
+  const btn = h('button', { class: 'btn primary block lg', type: 'submit' }, 'أرسل طلب الانضمام');
+  codeIn.addEventListener('input', () => { btn.textContent = codeIn.value.trim() ? 'ادخل' : 'أرسل طلب الانضمام'; });
+  if (codeIn.value.trim()) btn.textContent = 'ادخل';
   const submit = async () => {
     if (btn.classList.contains('busy')) return;
     err.hidden = true;
@@ -173,7 +176,7 @@ export function renderJoin(root, { code, onDone }) {
   };
   const form = h('form', { class: 'card pad-lg stack', novalidate: true },
     h('div', { class: 'h2' }, 'آخر خطوة'),
-    h('p', { class: 'muted small', style: { margin: 0 } }, 'أكّد اسمك وادخل التطبيق.'),
+    h('p', { class: 'muted small', style: { margin: 0 } }, 'أكّد اسمك وأرسل طلب الانضمام. الأدمن يراجع الطلب ويوصلك إشعار أول ما ينقبل. (لو معك كود دعوة تدخل على طول.)'),
     field('اسمك', nameIn), field('دبابك', bikeIn), field('كود الدعوة', codeIn), err, btn,
     h('button', { class: 'btn ghost block', type: 'button', onclick: () => state.sb.auth.signOut() }, 'تسجيل الخروج'));
   form.onsubmit = (e) => { e.preventDefault(); submit(); };
@@ -185,11 +188,28 @@ export function renderPending(root, { onRefresh }) {
   const me = state.me;
   const refresh = h('button', { class: 'btn block' }, icon('refresh'), 'تحقق الآن');
   refresh.onclick = () => { refresh.classList.add('busy'); onRefresh(); };
+  const notif = h('div');
+  pushStatus().then((st) => {
+    if (st === 'on') { mount(notif, h('div', { class: 'notice' }, icon('bell'), h('div', null, 'الإشعارات مفعّلة ✓ — بيوصلك إشعار أول ما ينقبل طلبك.'))); return; }
+    if (st === 'off') {
+      const b = h('button', { class: 'btn primary block' }, icon('bell'), 'فعّل الإشعارات عشان يوصلك خبر القبول');
+      b.onclick = async () => {
+        if (b.classList.contains('busy')) return;
+        b.classList.add('busy');
+        try { await enablePush(); toast('تم تفعيل الإشعارات 👍', 'ok'); mount(notif, h('div', { class: 'notice' }, icon('bell'), h('div', null, 'الإشعارات مفعّلة ✓ — بيوصلك إشعار أول ما ينقبل طلبك.'))); }
+        catch (e) { toast(PUSH_ERR[e?.message] || errMsg(e), 'err', 7000); }
+        finally { b.classList.remove('busy'); }
+      };
+      mount(notif, b); return;
+    }
+    if (PUSH_ERR[st] && st !== 'preview' && st !== 'no_key') mount(notif, h('div', { class: 'notice' }, icon('info'), h('div', null, PUSH_ERR[st])));
+  });
   mount(root, centerCard('طلبك بانتظار الموافقة',
-    `أهلًا ${me?.display_name || ''}. أرسلنا طلب انضمامك للأدمن. لن يظهر محتوى القروب حتى تتم الموافقة.`,
+    `أهلًا ${me?.display_name || ''}. وصل طلب انضمامك للأدمن. لن يظهر محتوى القروب حتى تتم الموافقة.`,
+    notif,
     h('div', { class: 'notice' }, icon('info'), h('div', null, 'إذا كانت الصفحة مفتوحة، ستنتقل تلقائيًا عند القبول. أو اضغط «تحقق الآن».')),
     refresh,
-    h('button', { class: 'btn ghost block', onclick: () => state.sb.auth.signOut() }, icon('logout'), 'تسجيل الخروج')));
+    h('button', { class: 'btn ghost block', onclick: async () => { await detachPush(); state.sb.auth.signOut(); } }, icon('logout'), 'تسجيل الخروج')));
 }
 
 export function renderSuspended(root) {

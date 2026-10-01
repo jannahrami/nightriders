@@ -1,4 +1,4 @@
-// دالة الحافة notify: تستقبل حدث (طلعة/مساعدة/رسالة) من Trigger قاعدة البيانات وترسل إشعارات Web Push.
+// دالة الحافة notify: تستقبل حدث (طلعة/مساعدة/رسالة/طلب انضمام/قبول) من Trigger قاعدة البيانات وترسل إشعارات Web Push.
 // الحماية: لا تقبل إلا طلبًا يحمل x-nr-secret المطابق للقيمة في private.app_secrets.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import * as webpush from "jsr:@negrel/webpush@0.5.0";
@@ -58,6 +58,16 @@ async function build(table: string, r: any) {
     return { kind: "ready", ride: null, exclude: r.id,
       msg: { title: `⚡ ${who} جاهز يطلع`, body: `فاضي لين ${until} — تطلع معه؟`, url: "#/home", tag: `ready-${r.id}`, urgent: false } };
   }
+  if (table === "join") {
+    return { kind: "join", ride: null, exclude: r.id, user: null,
+      msg: { title: "👋 طلب انضمام جديد", body: cut(`${r.display_name ?? "شخص"} يبي ينضم للقروب${r.bike_type ? " · " + r.bike_type : ""} — اضغط للمراجعة`, 180),
+        url: "#/admin?tab=pending", tag: `join-${r.id}`, urgent: false } };
+  }
+  if (table === "approved") {
+    return { kind: "approved", ride: null, exclude: null, user: r.id,
+      msg: { title: "✅ تم قبولك في القروب", body: `أهلًا ${r.display_name ?? ""}! صار عندك وصول كامل — افتح التطبيق وشوف الطلعات 🏍️`,
+        url: "#/home", tag: `approved-${r.id}`, urgent: false } };
+  }
   if (table === "messages") {
     const who = await nameOf(r.user_id);
     let where = "";
@@ -85,7 +95,11 @@ Deno.serve(async (req) => {
   const ev = record ? await build(table, record) : null;
   if (!ev) return Response.json({ ok: true, skipped: true });
 
-  const { data: subs, error } = await sb.rpc("push_targets", { p_kind: ev.kind, p_ride: ev.ride, p_exclude: ev.exclude });
+  // deno-lint-ignore no-explicit-any
+  const u = (ev as any).user as string | null | undefined;
+  const { data: subs, error } = u
+    ? await sb.rpc("push_targets_user", { p_user: u })
+    : await sb.rpc("push_targets", { p_kind: ev.kind, p_ride: ev.ride, p_exclude: ev.exclude });
   if (error) { console.error("targets", error); return new Response("targets", { status: 500 }); }
 
   const payload = JSON.stringify(ev.msg);

@@ -111,7 +111,7 @@ async function gate() {
     return;
   }
   if (!me) { appBooted = false; auth.renderJoin(app, { code: query.get('code'), onDone: gate }); return; }
-  if (me.status === 'pending') { appBooted = false; startGlobalRealtime(); auth.renderPending(app, { onRefresh: gate }); return; }
+  if (me.status === 'pending') { appBooted = false; startGlobalRealtime(); auth.renderPending(app, { onRefresh: gate }); import('./push.js').then((m) => m.syncPush()).catch(() => {}); return; }
   if (me.status === 'suspended') { appBooted = false; sharing.haltLocal(); stopGlobalRealtime(); auth.renderSuspended(app); return; }
   await bootApp();
 }
