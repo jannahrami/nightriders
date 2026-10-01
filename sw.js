@@ -1,7 +1,7 @@
 // Service Worker: يخزّن ملفات الواجهة فقط ليفتح التطبيق بسرعة.
 // لا يخزّن أي بيانات من Supabase أبدًا — البيانات تُجلب مباشرة من الخادم.
 // عند نشر نسخة جديدة غيّر رقم VERSION.
-const VERSION = 'nr-v1.6.0';
+const VERSION = 'nr-v1.6.1';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'assets/css/app.css',
   'assets/img/logo-full.png', 'assets/img/logo-mark.png', 'assets/icons/icon-192-v2.png', 'assets/icons/icon-512-v2.png', 'assets/icons/apple-touch-icon-v2.png',
@@ -37,12 +37,9 @@ self.addEventListener('fetch', (e) => {
     }).catch(() => caches.match('index.html')));
     return;
   }
-  // ملفات الواجهة: من الذاكرة ثم تحديث في الخلفية
-  e.respondWith(caches.match(req).then((hit) => {
-    const net = fetch(req).then((res) => {
-      if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
-      return res;
-    }).catch(() => hit);
-    return hit || net;
-  }));
+  // ملفات الواجهة: من الشبكة أولًا (حتى لا تختلط نسخة قديمة بجديدة)، ومن الذاكرة عند انقطاع النت
+  e.respondWith(fetch(req, { cache: 'no-cache' }).then((res) => {
+    if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
+    return res;
+  }).catch(() => caches.match(req, { ignoreSearch: true })));
 });
