@@ -198,6 +198,7 @@ function rpc(name, a = {}) {
   const P = (id) => db.profiles.find((p) => p.id === id);
   switch (name) {
     case 'voice_room_opened': return ok(true);
+    case 'demo_stats': return ok([]);
     case 'set_rsvp': {
       let r = db.ride_participants.find((x) => x.ride_id === a.p_ride && x.user_id === ME);
       const old = r && { ...r };

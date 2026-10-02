@@ -7,7 +7,22 @@ export default async function adminPage(root, _p, query) {
   let tab = query.get('tab') || ([...state.members.values()].some((m) => m.status === 'pending') ? 'pending' : 'members');
   const tabs = h('div', { class: 'tabs' });
   const body = h('div', { class: 'stack' });
-  mount(root, topbar({ title: 'لوحة الأدمن', back: '#/me' }), h('div', { class: 'content stack-lg' }, tabs, body));
+  const demoBox = h('div');
+  mount(root, topbar({ title: 'لوحة الأدمن', back: '#/me' }), h('div', { class: 'content stack-lg' }, demoBox, tabs, body));
+
+  // ----- زيارات روابط العرض التجريبي (للأدمن الأساسي فقط) -----
+  const PAGE_NAME = { home: 'الرئيسية', rides: 'الطلعات', ride: 'صفحة طلعة', map: 'الخريطة', chat: 'الشات', me: 'حسابي', market: 'السوق', places: 'دليل المحلات', place: 'دليل المحلات', voice: 'الغرفة الصوتية', admin: 'لوحة الأدمن', help: 'الفزعة', members: 'الأعضاء', member: 'ملف عضو' };
+  if (isOwner()) {
+    state.sb.rpc('demo_stats').then(({ data }) => {
+      if (!Array.isArray(data) || !data.length) return;
+      mount(demoBox, h('div', { class: 'card stack' },
+        h('div', { class: 'row' }, icon('search'), h('div', { class: 'h3' }, 'زيارات روابط العرض')),
+        ...data.map((d) => h('div', { class: 'stack', style: { gap: '4px' } },
+          h('div', { class: 'row between' }, h('b', { class: 'en' }, d.demo), h('span', { class: 'xs muted' }, `آخر زيارة ${fmtRelative(d.last_at)}`)),
+          h('div', { class: 'small' }, `انفتح ${d.opens} مرة · من ${d.devices} ${d.devices === 1 ? 'جهاز' : 'أجهزة'}`),
+          d.pages?.length ? h('div', { class: 'xs muted' }, 'الصفحات: ' + d.pages.map((p) => `${PAGE_NAME[p.page] || p.page} (${p.n})`).join('، ')) : null))));
+    }, () => {});
+  }
 
   const drawTabs = () => {
     const pendingCount = [...state.members.values()].filter((m) => m.status === 'pending').length;

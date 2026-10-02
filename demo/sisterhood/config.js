@@ -1,5 +1,7 @@
-// نسخة عرض تجريبية: بيانات وهمية فقط، بدون أي اتصال بقاعدة بيانات
+// نسخة عرض تجريبية: بيانات وهمية فقط. الاتصال الوحيد هو عدّاد الزيارات أدناه.
 window.NR_FORCE_PREVIEW = true;
+// عدّاد الزيارات فقط (مفتاح عام): لا يقرأ أي بيانات
+window.NR_DEMO = { id: 'sisterhood', url: 'https://wmhjrtwryuyguracnibf.supabase.co', key: 'sb_publishable_O6YS8i0sYLjS5RkUx8MiAQ_BvZMgWCt' };
 // ===============================================================
 //  Jeddah Ride — ملف الإعدادات
 //  إعدادات مشروع Jeddah Ride الفعلي (المفتاح عام وآمن للواجهة).
