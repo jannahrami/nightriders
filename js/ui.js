@@ -127,7 +127,8 @@ export function openSheet(title, build, onClose) {
   back.addEventListener('click', (e) => { if (e.target === back) close(); });
   document.addEventListener('keydown', onKey);
   window.addEventListener('hashchange', close);
-  sheet.append(h('div', { class: 'grab' }), title ? h('div', { class: 'sheet-title' }, title) : null);
+  sheet.append(h('div', { class: 'grab' }));
+  if (title) sheet.append(h('div', { class: 'sheet-title' }, title));
   const body = build(close);
   if (body) sheet.append(body);
   back.appendChild(sheet);
